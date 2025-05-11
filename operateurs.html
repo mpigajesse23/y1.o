@@ -1,0 +1,516 @@
+<!-- Page de gestion des opérateurs -->
+<div class="container-fluid my-4">
+  <!-- En-tête de la page -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-people me-2"></i> Gestion des opérateurs</h2>
+        <button type="button" class="btn btn-primary" id="addOperateurBtn">
+          <i class="bi bi-person-plus me-1"></i> Ajouter un opérateur
+        </button>
+      </div>
+      <p class="text-muted">Gérez vos opérateurs et leurs affectations de commandes</p>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Opérateurs connectés</h6>
+          <h2 class="card-title mb-0" id="operateursConnectes">0</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total opérateurs</h6>
+          <h2 class="card-title mb-0" id="totalOperateurs">0</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Dernière activité</h6>
+          <h2 class="card-title mb-0" id="derniereActivite">-</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres et bouton d'actualisation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <ul class="nav nav-pills" id="operateursTabs">
+          <li class="nav-item">
+            <button class="nav-link active" data-filter="tous">
+              Tous
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-filter="connectes">
+              Connectés
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-filter="deconnectes">
+              Déconnectés
+            </button>
+          </li>
+        </ul>
+        <button class="btn btn-outline-primary" id="btnActualiser">
+          <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des opérateurs -->
+  <div class="row">
+    <div class="col-12">
+      <div id="operateursList" class="row g-4">
+        <!-- Les opérateurs seront injectés ici -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <nav aria-label="Navigation des pages">
+        <ul class="pagination justify-content-center" id="pagination">
+          <!-- La pagination sera injectée ici -->
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'ajout d'opérateur -->
+<div class="modal fade" id="addOperateurModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Ajouter un opérateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addOperateurForm">
+          <div class="mb-3">
+            <label for="nom" class="form-label">Nom complet <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nom" required>
+          </div>
+          <div class="mb-3">
+            <label for="role" class="form-label">Rôle <span class="text-danger">*</span></label>
+            <select class="form-select" id="role" required>
+              <option value="Operateur" selected>Opérateur</option>
+              <option value="admin">Administrateur</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mot de passe <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="password" required>
+              <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="form-text">Minimum 8 caractères</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" id="saveOperateurBtn">
+          <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="saveSpinner"></span>
+          <span id="saveButtonText">Enregistrer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales
+    let allOperateurs = [];
+    let currentPage = 1;
+    let currentFilter = 'tous';
+    const operateursPerPage = 6;
+    
+    // Initialisation
+    const addOperateurBtn = document.getElementById('addOperateurBtn');
+    const saveOperateurBtn = document.getElementById('saveOperateurBtn');
+    const refreshOperateursBtn = document.getElementById('btnActualiser');
+    
+    // Charger les opérateurs au démarrage
+    loadOperateurs();
+    
+    // Gestionnaire pour le bouton d'actualisation
+    refreshOperateursBtn.addEventListener('click', function() {
+      loadOperateurs();
+    });
+    
+    // Gestionnaire pour le bouton d'ajout d'opérateur
+    addOperateurBtn.addEventListener('click', function() {
+      const modal = new bootstrap.Modal(document.getElementById('addOperateurModal'));
+      modal.show();
+    });
+    
+    // Gestionnaire pour le bouton de sauvegarde
+    saveOperateurBtn.addEventListener('click', function() {
+      const form = document.getElementById('addOperateurForm');
+      const saveSpinner = document.getElementById('saveSpinner');
+      const saveButtonText = document.getElementById('saveButtonText');
+      
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      // Vérifier la longueur du mot de passe
+      const password = document.getElementById('password').value;
+      if (password.length < 8) {
+        showError("Le mot de passe doit contenir au moins 8 caractères");
+        return;
+      }
+      
+      // Désactiver le bouton et afficher le spinner
+      saveOperateurBtn.disabled = true;
+      saveSpinner.classList.remove('d-none');
+      saveButtonText.textContent = 'Enregistrement...';
+      
+      const operateurData = {
+        nom: document.getElementById('nom').value,
+        role: document.getElementById('role').value,
+        password: password
+      };
+      
+      // Appeler le backend pour ajouter l'opérateur
+      google.script.run
+        .withSuccessHandler(function(result) {
+          // Réactiver le bouton et cacher le spinner
+          saveOperateurBtn.disabled = false;
+          saveSpinner.classList.add('d-none');
+          saveButtonText.textContent = 'Enregistrer';
+          
+          if (result && result.error) {
+            showError(result.error);
+            return;
+          }
+          
+          // Fermer le modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addOperateurModal'));
+          if (modal) {
+            modal.hide();
+          }
+          
+          // Réinitialiser le formulaire
+          form.reset();
+          
+          // Recharger la liste des opérateurs
+          loadOperateurs();
+          
+          // Afficher le message de succès
+          showSuccess(result && result.message ? result.message : "Opérateur ajouté avec succès");
+        })
+        .withFailureHandler(function(error) {
+          // Réactiver le bouton et cacher le spinner
+          saveOperateurBtn.disabled = false;
+          saveSpinner.classList.add('d-none');
+          saveButtonText.textContent = 'Enregistrer';
+          
+          showError("Erreur lors de l'ajout de l'opérateur: " + error);
+        })
+        .ajouterOperateur(operateurData);
+    });
+    
+    // Gestionnaire pour afficher/masquer le mot de passe
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      const icon = this.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+      }
+    });
+    
+    // Empêcher la soumission réelle du formulaire
+    document.getElementById('addOperateurForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+    });
+    
+    // Fonction pour formater une date
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      return dateStr;
+    }
+    
+    // Fonction pour charger les opérateurs
+    function loadOperateurs() {
+      const loader = document.createElement('div');
+      loader.className = 'text-center py-4';
+      loader.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>';
+      document.getElementById('operateursList').innerHTML = '';
+      document.getElementById('operateursList').appendChild(loader);
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.error);
+            return;
+          }
+          
+          allOperateurs = result.operateurs;
+          
+          // Mettre à jour les compteurs
+          document.querySelector('#operateursConnectes').textContent = result.connectes;
+          document.querySelector('#totalOperateurs').textContent = result.total;
+          
+          // Filtrer et afficher les opérateurs
+          filterAndDisplayOperateurs();
+        })
+        .withFailureHandler(function(error) {
+          showError("Erreur lors du chargement des opérateurs: " + error);
+        })
+        .getOperateurs();
+    }
+    
+    // Fonction pour filtrer et afficher les opérateurs
+    function filterAndDisplayOperateurs() {
+      let filteredOperateurs = allOperateurs;
+      
+      // Appliquer le filtre
+      if (currentFilter === 'connectes') {
+        filteredOperateurs = allOperateurs.filter(op => op.estActif);
+      } else if (currentFilter === 'deconnectes') {
+        filteredOperateurs = allOperateurs.filter(op => !op.estActif);
+      }
+      
+      // Calculer la pagination
+      const totalPages = Math.ceil(filteredOperateurs.length / operateursPerPage);
+      const start = (currentPage - 1) * operateursPerPage;
+      const end = start + operateursPerPage;
+      const pageOperateurs = filteredOperateurs.slice(start, end);
+      
+      // Afficher les opérateurs
+      const container = document.getElementById('operateursList');
+      container.innerHTML = '';
+      
+      if (pageOperateurs.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center py-4">Aucun opérateur trouvé</div>';
+        return;
+      }
+      
+      pageOperateurs.forEach(operateur => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        
+        const statusClass = operateur.estActif ? 'bg-success' : 'bg-secondary';
+        const statusText = operateur.estActif ? 'Connecté' : 'Déconnecté';
+        
+        col.innerHTML = `
+          <div class="operateur-card p-3 rounded">
+            <div class="d-flex align-items-center">
+              <div class="avatar-circle">${operateur.nom[0].toUpperCase()}</div>
+              <div class="ms-3 flex-grow-1">
+                <h5 class="mb-1">${operateur.nom}</h5>
+                <div class="text-muted small">
+                  <span class="badge ${statusClass} text-white">${statusText}</span>
+                  <div class="mt-2">
+                    Connexion: ${formatDate(operateur.heureConnexion)}
+                    <br>
+                    Déconnexion: ${formatDate(operateur.heureDeconnexion)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(col);
+      });
+      
+      // Mettre à jour la pagination
+      updatePagination(totalPages);
+    }
+    
+    // Fonction pour mettre à jour la pagination
+    function updatePagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      if (!pagination) return;
+      
+      let html = `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="prev">&laquo;</a>
+        </li>
+      `;
+      
+      for (let i = 1; i <= totalPages; i++) {
+        html += `
+          <li class="page-item ${currentPage === i ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>
+        `;
+      }
+      
+      html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="next">&raquo;</a>
+        </li>
+      `;
+      
+      pagination.innerHTML = html;
+    }
+    
+    // Gestionnaires d'événements
+    document.getElementById('operateursTabs').addEventListener('click', function(e) {
+      if (e.target.classList.contains('nav-link')) {
+        // Mettre à jour l'état actif des onglets
+        document.querySelectorAll('#operateursTabs .nav-link').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        
+        // Appliquer le filtre
+        currentFilter = e.target.dataset.filter;
+        currentPage = 1;
+        filterAndDisplayOperateurs();
+      }
+    });
+    
+    document.getElementById('pagination').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (e.target.classList.contains('page-link')) {
+        const page = e.target.dataset.page;
+        if (page === 'prev' && currentPage > 1) {
+          currentPage--;
+        } else if (page === 'next' && currentPage < Math.ceil(allOperateurs.length / operateursPerPage)) {
+          currentPage++;
+        } else if (page !== 'prev' && page !== 'next') {
+          currentPage = parseInt(page);
+        }
+        filterAndDisplayOperateurs();
+      }
+    });
+    
+    // Fonction pour afficher une erreur
+    function showError(message) {
+      // Créer une alerte Bootstrap
+      const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      // Insérer l'alerte au début de la page
+      const container = document.querySelector('.container-fluid');
+      if (container) {
+        const alertDiv = document.createElement('div');
+        alertDiv.innerHTML = alertHtml;
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-fermeture après 5 secondes
+        setTimeout(() => {
+          const alert = alertDiv.querySelector('.alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 5000);
+      }
+    }
+    
+    // Fonction pour afficher un succès
+    function showSuccess(message) {
+      // Créer une alerte Bootstrap
+      const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      // Insérer l'alerte au début de la page
+      const container = document.querySelector('.container-fluid');
+      if (container) {
+        const alertDiv = document.createElement('div');
+        alertDiv.innerHTML = alertHtml;
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-fermeture après 5 secondes
+        setTimeout(() => {
+          const alert = alertDiv.querySelector('.alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 5000);
+      }
+    }
+
+    // Actualisation automatique toutes les 30 secondes
+    setInterval(loadOperateurs, 30000);
+  });
+</script>
+
+<style>
+  /* Styles spécifiques à la page opérateurs */
+  .operateur-card {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .operateur-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #495057;
+  }
+  
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .nav-pills .nav-link {
+    color: #6c757d;
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    margin-right: 0.5rem;
+  }
+  
+  .nav-pills .nav-link.active {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+  
+  .nav-pills .nav-link:hover:not(.active) {
+    background-color: #f8f9fa;
+  }
+</style> 

@@ -1,0 +1,1447 @@
+n<!-- Page de gestion des commandes (admin) -->
+<div class="container-fluid my-4">
+  <!-- Titre et boutons d'action -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h2>
+        <i class="bi bi-list-check me-2"></i>
+        Gestion des commandes
+      </h2>
+    </div>
+    <div class="col-md-6 text-end">
+      <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addCommandeModal">
+        <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
+      </button>
+      <button type="button" class="btn btn-outline-secondary" id="refreshBtn">
+        <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+      </button>
+    </div>
+    <div class="col-12">
+      <hr>
+    </div>
+  </div>
+
+  <!-- Alerte pour les messages système -->
+  <div id="alertContainer" class="row mb-3" style="display: none;">
+    <div class="col-12">
+      <div class="alert alert-dismissible fade show" role="alert" id="alertMessage">
+        <span id="alertText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglets de filtrage -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <ul class="nav nav-tabs" id="commandesTabs">
+        <li class="nav-item">
+          <button class="nav-link active" data-filter="Non affectée">
+            <i class="bi bi-dash-circle me-1"></i> Non affectées <span class="badge bg-warning rounded-pill ms-1" id="countNonAffectees">0</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-filter="Doublon">
+            <i class="bi bi-copy me-1"></i> Doublons <span class="badge bg-info rounded-pill ms-1" id="countDoublons">0</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-filter="Erronée">
+            <i class="bi bi-exclamation-circle me-1"></i> Erreurs <span class="badge bg-danger rounded-pill ms-1" id="countErronees">0</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-filter="Affectée">
+            <i class="bi bi-check-circle me-1"></i> Affectées <span class="badge bg-success rounded-pill ms-1" id="countAffectees">0</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Recherche -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="input-group">
+        <input type="text" class="form-control" id="searchCommandes" placeholder="Rechercher...">
+        <button class="btn btn-outline-primary" type="button" id="btnSearch">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des commandes -->
+  <div class="row">
+    <div class="col-12">
+      <div class="table-responsive" style="max-height: 600px; overflow: auto; white-space: nowrap;">
+        <table class="table table-bordered mb-0" style="font-size: 13px; min-width: 1500px;">
+          <thead>
+            <tr>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; width: 30px;">
+                <input type="checkbox" class="form-check-input" id="selectAllCommandes">
+              </th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 120px;">N° Commande</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 110px;">Statut</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 150px;">Opérateur</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 150px;">Client</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 120px;">Téléphone</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 150px;">Adresse</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 100px;">Ville</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 250px;">Produit</th>
+              <th scope="col" class="bg-white sticky-top text-center" style="position: sticky; top: 0; z-index: 2; min-width: 80px;">Quantité</th>
+              <th scope="col" class="bg-white sticky-top text-end" style="position: sticky; top: 0; z-index: 2; min-width: 100px;">Prix</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 140px;">Date Création</th>
+              <th scope="col" class="bg-white sticky-top" style="position: sticky; top: 0; z-index: 2; min-width: 120px;">Motifs</th>
+              <th scope="col" class="bg-white sticky-top text-center" style="position: sticky; top: 0; z-index: 2; min-width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="commandesTableBody">
+            <!-- Les données seront injectées ici via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bouton d'affectation multiple -->
+  <div class="position-fixed bottom-0 end-0 m-3">
+    <button type="button" class="btn btn-primary" id="btnAffecterMultiple" style="display: none;">
+      <i class="bi bi-person-check me-1"></i> Affecter les commandes sélectionnées
+    </button>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="row mt-4">
+    <div class="col-lg-5 col-md-5 col-sm-12">
+      <div class="d-flex align-items-center mb-3 mb-md-0">
+        <label class="me-2 text-nowrap">Afficher</label>
+        <select id="pageSize" class="form-select form-select-sm mx-1" style="width: 70px;">
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+        <label class="ms-2 me-auto text-nowrap">entrées</label>
+        <span class="badge bg-primary ms-2 py-2 px-3" id="affichageInfo">0 - 0 / 0</span>
+      </div>
+    </div>
+    <div class="col-lg-7 col-md-7 col-sm-12">
+      <nav aria-label="Navigation des pages de commandes">
+        <ul class="pagination justify-content-md-end justify-content-center flex-wrap mb-0" id="pagination">
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Précédent" id="prevPage">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Suivant" id="nextPage">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de nouvelle commande -->
+<div class="modal fade" id="addCommandeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ajouter une nouvelle commande</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newCommandeForm">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">N° Commande</label>
+              <div class="input-group">
+                <span class="input-group-text">YCN-</span>
+                <input type="text" class="form-control" id="newNumCommande" placeholder="000000" readonly>
+              </div>
+              <small class="text-muted">Généré automatiquement</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Statut</label>
+              <select class="form-select" id="newStatut">
+                <option value="Non affectée" selected>Non affectée</option>
+                <option value="Doublon">Doublon</option>
+                <option value="Erronée">Erronée</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Opérateur</label>
+              <select class="form-select" id="newOperateur">
+                <option value="" selected>Non assigné</option>
+                <option value="Said">Said</option>
+                <option value="Hamid">Hamid</option>
+                <option value="Khadija">Khadija</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Client</label>
+              <input type="text" class="form-control" id="newClient" required>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Téléphone</label>
+              <input type="tel" class="form-control" id="newTelephone" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Adresse</label>
+              <input type="text" class="form-control" id="newAdresse" value="N/A">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Ville</label>
+              <input type="text" class="form-control" id="newVille" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Produit</label>
+              <select class="form-select" id="newProduit" required>
+                <option value="" selected disabled>Sélectionner un produit</option>
+                <option value="ESP HOM YZ650 - 42/أسود لنيت/ noir blanc">ESP HOM YZ650 - 42/أسود لنيت/ noir blanc</option>
+                <option value="ESP HOM YZ650 - 41/الأزرق / bleu">ESP HOM YZ650 - 41/الأزرق / bleu</option>
+                <option value="SDL HOM YZ740 - 44/noir / أسود">SDL HOM YZ740 - 44/noir / أسود</option>
+                <option value="CHAUSS FEM YZ 244 - 40/أسود / noir">CHAUSS FEM YZ 244 - 40/أسود / noir</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Quantité</label>
+              <input type="number" class="form-control" id="newQuantite" value="1" min="1" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prix</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="newPrix" step="1" required>
+                <span class="input-group-text">MAD</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Motifs (si erreur/doublon)</label>
+              <input type="text" class="form-control" id="newMotifs">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" id="btnSaveCommande">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de détails/édition de commande -->
+<div class="modal fade" id="editCommandeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Détails de la commande <span id="editCommandeNum"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCommandeForm">
+          <input type="hidden" id="editNumeroCommande">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Statut</label>
+              <select class="form-select" id="editStatut">
+                <option value="Non affectée">Non affectée</option>
+                <option value="Doublon">Doublon</option>
+                <option value="Erronée">Erronée</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Opérateur</label>
+              <select class="form-select" id="editOperateur">
+                <option value="">Non assigné</option>
+                <option value="Said">Said</option>
+                <option value="Hamid">Hamid</option>
+                <option value="Khadija">Khadija</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Client</label>
+              <input type="text" class="form-control" id="editClient">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Téléphone</label>
+              <input type="tel" class="form-control" id="editTelephone">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Adresse</label>
+              <input type="text" class="form-control" id="editAdresse">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Ville</label>
+              <input type="text" class="form-control" id="editVille">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">Produit</label>
+              <select class="form-select" id="editProduit">
+                <option value="ESP HOM YZ650 - 42/أسود لنيت/ noir blanc">ESP HOM YZ650 - 42/أسود لنيت/ noir blanc</option>
+                <option value="ESP HOM YZ650 - 41/الأزرق / bleu">ESP HOM YZ650 - 41/الأزرق / bleu</option>
+                <option value="SDL HOM YZ740 - 44/noir / أسود">SDL HOM YZ740 - 44/noir / أسود</option>
+                <option value="CHAUSS FEM YZ 244 - 40/أسود / noir">CHAUSS FEM YZ 244 - 40/أسود / noir</option>
+                <option value="SAB FEM YZ53 - 37/لبني / MARRON">SAB FEM YZ53 - 37/لبني / MARRON</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Quantité</label>
+              <input type="number" class="form-control" id="editQuantite">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prix</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="editPrix">
+                <span class="input-group-text">MAD</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Date de création</label>
+              <input type="text" class="form-control" id="editDateCreation" readonly>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">Motifs</label>
+              <input type="text" class="form-control" id="editMotifs">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger me-auto" id="btnDeleteCommande">Supprimer</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-primary" id="btnUpdateCommande">Enregistrer les modifications</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal d'affectation multiple -->
+<div class="modal fade" id="affecterMultipleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Affecter les commandes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="nbCommandesSelectionnees">0</span> commande(s) sélectionnée(s)
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sélectionner un opérateur :</label>
+          <select class="form-select" id="operateurMultiple">
+            <option value="" selected>Choisir un opérateur...</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" onclick="confirmerAffectationMultiple()">
+          <i class="bi bi-check-circle me-1"></i> Confirmer l'affectation
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Variables globales
+  let allCommandes = [];
+  let currentPage = 1;
+  let pageSize = 50;
+  let currentStatut = "Non affectée";
+  
+  // Au chargement de la page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Charger les commandes non affectées par défaut
+    loadCommandes("Non affectée");
+    
+    // Initialiser les événements
+    initEventListeners();
+  });
+  
+  // Initialiser les événements
+  function initEventListeners() {
+    // Bouton de rafraîchissement
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+      loadCommandes(currentStatut);
+    });
+    
+    // Bouton de recherche
+    document.getElementById('btnSearch').addEventListener('click', function() {
+      searchCommandes();
+    });
+    
+    // Touche Entrée dans le champ de recherche
+    document.getElementById('searchCommandes').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        searchCommandes();
+      }
+    });
+    
+    // Changement de taille de page
+    document.getElementById('pageSize').addEventListener('change', function() {
+      pageSize = parseInt(this.value);
+      currentPage = 1; // Réinitialiser à la première page
+      displayPagedCommandes();
+    });
+    
+    // Boutons de navigation
+    document.getElementById('prevPage').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        displayPagedCommandes();
+      }
+    });
+    
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+      e.preventDefault();
+      const maxPage = Math.ceil(allCommandes.length / pageSize);
+      if (currentPage < maxPage) {
+        currentPage++;
+        displayPagedCommandes();
+      }
+    });
+    
+    // Onglets de filtrage
+    const tabButtons = document.querySelectorAll('#commandesTabs .nav-link');
+    tabButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        // Mettre à jour l'onglet actif
+        tabButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Charger les commandes selon le filtre
+        const filter = this.getAttribute('data-filter');
+        currentStatut = filter;
+        loadCommandes(filter);
+      });
+    });
+    
+    // Formulaire de nouvelle commande
+    document.getElementById('btnSaveCommande').addEventListener('click', function() {
+      saveNewCommande();
+    });
+    
+    // Formulaire d'édition de commande
+    document.getElementById('btnUpdateCommande').addEventListener('click', function() {
+      updateCommande();
+    });
+    
+    // Bouton de suppression
+    document.getElementById('btnDeleteCommande').addEventListener('click', function() {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) {
+        deleteCommande();
+      }
+    });
+  }
+  
+  // Charger les commandes selon le statut
+  function loadCommandes(statut) {
+    currentStatut = statut;
+    const tableBody = document.getElementById('commandesTableBody');
+    
+    // Désactiver les contrôles pendant le chargement
+    document.getElementById('pageSize').disabled = true;
+    
+    // Afficher l'indicateur de chargement
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="14" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    
+    // Appeler le backend pour obtenir les commandes
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          console.error('Erreur:', result.error);
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="14" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${result.error}
+              </td>
+            </tr>
+          `;
+          document.getElementById('pageSize').disabled = false;
+          return;
+        }
+        
+        // Mettre à jour les compteurs
+        if (result.stats) {
+          document.getElementById('countNonAffectees').textContent = result.stats.nonAffectees || 0;
+          document.getElementById('countDoublons').textContent = result.stats.doublons || 0;
+          document.getElementById('countErronees').textContent = result.stats.erronees || 0;
+          document.getElementById('countAffectees').textContent = result.stats.affectees || 0;
+        }
+        
+        // Stocker les commandes et afficher la première page
+        allCommandes = result.commandes || [];
+        currentPage = 1;
+        displayPagedCommandes();
+        
+        // Réactiver les contrôles
+        document.getElementById('pageSize').disabled = false;
+        
+        // Mettre à jour le bouton d'affectation multiple
+        updateBtnAffecterMultiple();
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur:', error);
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="14" class="text-center text-danger py-4">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Erreur lors du chargement des commandes
+            </td>
+          </tr>
+        `;
+        document.getElementById('pageSize').disabled = false;
+      })
+      .getCommandes(statut);
+  }
+  
+  // Fonction pour afficher les commandes avec pagination
+  function displayPagedCommandes() {
+    if (!allCommandes || allCommandes.length === 0) {
+      return;
+    }
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, allCommandes.length);
+    const commandesPage = allCommandes.slice(startIndex, endIndex);
+    const tableBody = document.getElementById('commandesTableBody');
+    tableBody.innerHTML = '';
+    
+    commandesPage.forEach(function(cmd) {
+      const tr = document.createElement('tr');
+      
+      // Appliquer la classe selon le statut
+      if (cmd.statut === 'Non affectée') tr.style.backgroundColor = '#fff3cd';
+      else if (cmd.statut === 'Doublon') tr.style.backgroundColor = '#cff4fc';
+      else if (cmd.statut === 'Erronée') tr.style.backgroundColor = '#f8d7da';
+      else if (cmd.statut === 'Affectée') tr.style.backgroundColor = '#d4edda';
+      
+      tr.innerHTML = `
+        <td class="px-2 py-2">
+          ${cmd.statut === 'Non affectée' ? `
+            <input type="checkbox" class="form-check-input commande-checkbox" data-cmd-num="${cmd.cmdNum}">
+          ` : ''}
+        </td>
+        <td class="px-2 py-2">${cmd.cmdNum || ''}</td>
+        <td class="px-2 py-2">
+          <span class="badge ${getBadgeClass(cmd.statut)}">${cmd.statut || ''}</span>
+        </td>
+        <td class="px-2 py-2">${cmd.operateur || '-'}</td>
+        <td class="px-2 py-2" dir="rtl">${cmd.client || ''}</td>
+        <td class="px-2 py-2">${formatPhone(cmd.telephone) || ''}</td>
+        <td class="px-2 py-2">${cmd.adresse || 'N/A'}</td>
+        <td class="px-2 py-2" dir="rtl">${cmd.ville || ''}</td>
+        <td class="px-2 py-2">${cmd.produit || ''}</td>
+        <td class="px-2 py-2 text-center">${cmd.quantite || '1'}</td>
+        <td class="px-2 py-2 text-end">${cmd.prix || '-'}</td>
+        <td class="px-2 py-2">${formatDate(cmd.dateCreation) || ''}</td>
+        <td class="px-2 py-2">${cmd.motifs || '-'}</td>
+        <td class="px-2 py-2 text-center">
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-link text-primary" onclick="editCommande('${cmd.cmdNum}')" title="Modifier">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            ${cmd.statut === 'Non affectée' ? `
+              <button type="button" class="btn btn-link text-success" onclick="prepareAffectationMultiple(['${cmd.cmdNum}'])" title="Affecter">
+                <i class="bi bi-person-check"></i>
+              </button>
+            ` : ''}
+            <button type="button" class="btn btn-link text-danger" onclick="confirmDelete('${cmd.cmdNum}')" title="Supprimer">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      
+      tableBody.appendChild(tr);
+    });
+    
+    updatePaginationInfo(startIndex, endIndex, allCommandes.length);
+    updateSelectAllCheckbox();
+    updateBtnAffecterMultiple();
+  }
+  
+  // Fonction pour mettre à jour les informations de pagination
+  function updatePaginationInfo(startIndex, endIndex, total) {
+    // Mettre à jour l'affichage du nombre d'entrées
+    document.getElementById('affichageInfo').textContent = 
+      total === 0 ? '0 - 0 / 0' : `${startIndex + 1} - ${endIndex} / ${total}`;
+    
+    // Mettre à jour la pagination
+    updatePagination(total);
+  }
+  
+  // Fonction pour mettre à jour la pagination
+  function updatePagination(totalItems) {
+    const maxPage = Math.ceil(totalItems / pageSize);
+    const paginationElement = document.getElementById('pagination');
+    
+    // Vider la pagination sauf le premier et le dernier élément
+    const prevPageItem = paginationElement.firstElementChild;
+    const nextPageItem = paginationElement.lastElementChild;
+    
+    paginationElement.innerHTML = '';
+    paginationElement.appendChild(prevPageItem);
+    
+    // Activer/désactiver les boutons précédent/suivant
+    if (currentPage <= 1) {
+      prevPageItem.classList.add('disabled');
+    } else {
+      prevPageItem.classList.remove('disabled');
+    }
+    
+    // Générer les liens de pagination (limiter à 7 pages maximum)
+    let startPage = Math.max(1, currentPage - 3);
+    let endPage = Math.min(maxPage, startPage + 6);
+    
+    if (endPage - startPage < 6) {
+      startPage = Math.max(1, endPage - 6);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      const pageItem = document.createElement('li');
+      pageItem.className = 'page-item' + (i === currentPage ? ' active' : '');
+      
+      const pageLink = document.createElement('a');
+      pageLink.className = 'page-link';
+      pageLink.href = '#';
+      pageLink.textContent = i;
+      
+      pageLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentPage = i;
+        displayPagedCommandes();
+      });
+      
+      pageItem.appendChild(pageLink);
+      paginationElement.appendChild(pageItem);
+    }
+    
+    paginationElement.appendChild(nextPageItem);
+    
+    if (currentPage >= maxPage) {
+      nextPageItem.classList.add('disabled');
+    } else {
+      nextPageItem.classList.remove('disabled');
+    }
+  }
+  
+  // Fonction pour synchroniser les commandes
+  function synchroniserCommandes() {
+    // Désactiver le bouton pendant la synchronisation
+    const syncBtn = document.getElementById('syncBtn');
+    const syncSpinner = document.getElementById('syncSpinner');
+    
+    syncBtn.disabled = true;
+    syncSpinner.classList.remove('d-none');
+    
+    // Appeler la fonction côté serveur
+    google.script.run
+      .withSuccessHandler(function(result) {
+        // Réactiver le bouton
+        syncBtn.disabled = false;
+        syncSpinner.classList.add('d-none');
+        
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        // Afficher le message de succès avec les statistiques
+        let message = `Synchronisation réussie.`;
+        
+        if (result.differences) {
+          const diff = result.differences;
+          if (diff.total > 0) {
+            message += ` ${diff.total} nouvelle(s) commande(s) trouvée(s).`;
+          } else if (diff.total === 0) {
+            message += ` Aucune nouvelle commande.`;
+          }
+        }
+        
+        showSuccess(message);
+        
+        // Rafraîchir la liste après synchronisation
+        loadCommandes(currentStatut);
+      })
+      .withFailureHandler(function(error) {
+        // Réactiver le bouton
+        syncBtn.disabled = false;
+        syncSpinner.classList.add('d-none');
+        
+        showError(error);
+      })
+      .synchroniserCommandes();
+  }
+  
+  // Fonction pour obtenir la classe de badge selon le statut
+  function getBadgeClass(statut) {
+    switch(statut) {
+      case 'Non affectée': return 'bg-warning text-dark';
+      case 'Doublon': return 'bg-info text-dark';
+      case 'Erronée': return 'bg-danger';
+      case 'Affectée': return 'bg-success';
+      default: return 'bg-secondary';
+    }
+  }
+  
+  // Fonction pour formater un numéro de téléphone
+  function formatPhone(phone) {
+    if (!phone) return '';
+    
+    // Nettoyer le numéro de téléphone
+    const cleaned = ('' + phone).replace(/\D/g, '');
+    
+    // Appliquer un formatage selon la longueur
+    if (cleaned.length === 10) {
+      return cleaned.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+    } else if (cleaned.length === 9) {
+      return cleaned.replace(/(\d{2})(\d{2})(\d{2})(\d{3})/, '$1 $2 $3 $4');
+    }
+    
+    // Si le format est différent, retourner tel quel avec des espaces tous les 2 chiffres
+    return cleaned.replace(/(\d{2})(?=\d)/g, '$1 ');
+  }
+  
+  // Fonction pour formater un prix
+  function formatPrice(price) {
+    if (!price) return '-';
+    if (isNaN(price)) return price;
+    
+    try {
+      // Formater le prix avec la devise MAD
+      return new Intl.NumberFormat('fr-MA', { 
+        style: 'currency', 
+        currency: 'MAD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2 
+      }).format(price);
+    } catch (e) {
+      console.error('Erreur de formatage de prix:', e);
+      return price + ' MAD';
+    }
+  }
+  
+  // Fonction pour formater une date
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    
+    try {
+      // Si c'est déjà un format de date valide, le retourner formaté
+      const dateParts = dateStr.split(/[\/\-\. ,:]/);
+      if (dateParts.length >= 3) {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+      }
+    } catch (e) {
+      console.log('Erreur de formatage de date:', e);
+    }
+    
+    // Retourner la date telle quelle si le formatage échoue
+    return dateStr;
+  }
+  
+  // Fonction pour éditer une commande
+  function editCommande(numeroCommande) {
+    // Appeler le serveur pour obtenir les détails de la commande
+    google.script.run
+      .withSuccessHandler(function(cmd) {
+        if (cmd.error) {
+          showError(cmd.error);
+          return;
+        }
+        
+        // Remplir le formulaire d'édition
+        document.getElementById('editNumeroCommande').value = cmd.cmdNum;
+        document.getElementById('editCommandeNum').textContent = cmd.cmdNum;
+        document.getElementById('editStatut').value = cmd.statut || 'Non affectée';
+        document.getElementById('editOperateur').value = cmd.operateur || '';
+        document.getElementById('editClient').value = cmd.client || '';
+        document.getElementById('editTelephone').value = cmd.telephone || '';
+        document.getElementById('editAdresse').value = cmd.adresse || '';
+        document.getElementById('editVille').value = cmd.ville || '';
+        document.getElementById('editProduit').value = cmd.produit || '';
+        document.getElementById('editQuantite').value = cmd.quantite || '1';
+        document.getElementById('editPrix').value = cmd.prix || '';
+        document.getElementById('editDateCreation').value = cmd.dateCreation || '';
+        document.getElementById('editMotifs').value = cmd.motifs || '';
+        
+        // Afficher le modal en toute sécurité
+        try {
+          const editModal = document.getElementById('editCommandeModal');
+          const modalInstance = bootstrap.Modal.getInstance(editModal) || new bootstrap.Modal(editModal);
+          modalInstance.show();
+        } catch (err) {
+          console.error("Erreur lors de l'ouverture du modal:", err);
+          // Fallback - afficher le modal sans utiliser l'API Bootstrap
+          document.getElementById('editCommandeModal').classList.add('show');
+          document.getElementById('editCommandeModal').style.display = 'block';
+        }
+      })
+      .withFailureHandler(showError)
+      .getCommande(numeroCommande);
+  }
+  
+  // Fonction pour sauvegarder une nouvelle commande
+  function saveNewCommande() {
+    // Récupérer les données du formulaire
+    const commandeData = {
+      client: document.getElementById('newClient').value,
+      telephone: document.getElementById('newTelephone').value,
+      adresse: document.getElementById('newAdresse').value,
+      ville: document.getElementById('newVille').value,
+      produit: document.getElementById('newProduit').value,
+      quantite: document.getElementById('newQuantite').value,
+      prix: document.getElementById('newPrix').value,
+      statut: document.getElementById('newStatut').value,
+      operateur: document.getElementById('newOperateur').value,
+      motifs: document.getElementById('newMotifs').value
+    };
+    
+    // Validation basique
+    if (!commandeData.client || !commandeData.telephone || !commandeData.ville || !commandeData.produit) {
+      showError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    // Envoyer au serveur
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        // Fermer le modal
+        try {
+          const addModal = document.getElementById('addCommandeModal');
+          const modalInstance = bootstrap.Modal.getInstance(addModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        } catch (err) {
+          console.error("Erreur lors de la fermeture du modal:", err);
+          // Fallback
+          document.getElementById('addCommandeModal').classList.remove('show');
+          document.getElementById('addCommandeModal').style.display = 'none';
+        }
+        
+        // Rafraîchir la liste
+        const activeTab = document.querySelector('#commandesTabs .nav-link.active');
+        const filter = activeTab ? activeTab.getAttribute('data-filter') : 'Non affectée';
+        loadCommandes(filter);
+        
+        // Réinitialiser le formulaire
+        document.getElementById('newCommandeForm').reset();
+        
+        // Afficher un message de succès
+        showSuccess('Commande ajoutée avec succès');
+      })
+      .withFailureHandler(showError)
+      .ajouterCommande(commandeData);
+  }
+  
+  // Fonction pour mettre à jour une commande existante
+  function updateCommande() {
+    // Récupérer les données du formulaire
+    const numeroCommande = document.getElementById('editNumeroCommande').value;
+    const commandeData = {
+      statut: document.getElementById('editStatut').value,
+      operateur: document.getElementById('editOperateur').value,
+      client: document.getElementById('editClient').value,
+      telephone: document.getElementById('editTelephone').value,
+      adresse: document.getElementById('editAdresse').value,
+      ville: document.getElementById('editVille').value,
+      produit: document.getElementById('editProduit').value,
+      quantite: document.getElementById('editQuantite').value,
+      prix: document.getElementById('editPrix').value,
+      motifs: document.getElementById('editMotifs').value
+    };
+    
+    // Validation basique
+    if (!commandeData.client || !commandeData.telephone || !commandeData.ville || !commandeData.produit) {
+      showError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    // Envoyer au serveur
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        // Fermer le modal
+        try {
+          const editModal = document.getElementById('editCommandeModal');
+          const modalInstance = bootstrap.Modal.getInstance(editModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        } catch (err) {
+          console.error("Erreur lors de la fermeture du modal:", err);
+          // Fallback
+          document.getElementById('editCommandeModal').classList.remove('show');
+          document.getElementById('editCommandeModal').style.display = 'none';
+        }
+        
+        // Rafraîchir la liste
+        const activeTab = document.querySelector('#commandesTabs .nav-link.active');
+        const filter = activeTab ? activeTab.getAttribute('data-filter') : 'Non affectée';
+        loadCommandes(filter);
+        
+        // Afficher un message de succès
+        showSuccess('Commande mise à jour avec succès');
+      })
+      .withFailureHandler(showError)
+      .updateCommande(numeroCommande, commandeData);
+  }
+  
+  // Fonction pour confirmer la suppression
+  function confirmDelete(numeroCommande) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer la commande ${numeroCommande} ?`)) {
+      deleteCommande(numeroCommande);
+    }
+  }
+  
+  // Fonction pour supprimer une commande
+  function deleteCommande(numeroCommande) {
+    // Si appelé depuis le modal d'édition
+    if (!numeroCommande) {
+      numeroCommande = document.getElementById('editNumeroCommande').value;
+    }
+    
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        // Fermer le modal si ouvert
+        try {
+        const editModal = document.getElementById('editCommandeModal');
+          const modalInstance = bootstrap.Modal.getInstance(editModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        } catch (err) {
+          console.error("Erreur lors de la fermeture du modal:", err);
+          // Fallback
+          document.getElementById('editCommandeModal').classList.remove('show');
+          document.getElementById('editCommandeModal').style.display = 'none';
+        }
+        
+        // Rafraîchir la liste
+        const activeTab = document.querySelector('#commandesTabs .nav-link.active');
+        const filter = activeTab ? activeTab.getAttribute('data-filter') : 'Non affectée';
+        loadCommandes(filter);
+        
+        // Afficher un message de succès
+        showSuccess('Commande supprimée avec succès');
+      })
+      .withFailureHandler(showError)
+      .supprimerCommande(numeroCommande);
+  }
+  
+  // Fonction pour afficher une erreur avec une alerte Bootstrap
+  function showError(message) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    
+    // Configurer l'alerte
+    alertMessage.className = 'alert alert-danger alert-dismissible fade show';
+    alertText.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}`;
+    alertContainer.style.display = 'block';
+    
+    // Masquer automatiquement après 6 secondes
+    setTimeout(function() {
+      try {
+        // Essayer d'utiliser l'API Bootstrap si disponible
+        const bsAlert = bootstrap.Alert.getInstance(alertMessage);
+        if (bsAlert) {
+          bsAlert.close();
+        } else {
+          // Fallback manuel si l'instance n'existe pas
+          alertContainer.style.display = 'none';
+        }
+      } catch (err) {
+        // Fallback en cas d'erreur
+        console.error("Erreur lors de la fermeture de l'alerte:", err);
+        alertContainer.style.display = 'none';
+      }
+    }, 6000);
+  }
+  
+  // Fonction pour afficher un message de succès avec une alerte Bootstrap
+  function showSuccess(message) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    
+    // Configurer l'alerte
+    alertMessage.className = 'alert alert-success alert-dismissible fade show';
+    alertText.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> ${message}`;
+    alertContainer.style.display = 'block';
+    
+    // Masquer automatiquement après 5 secondes
+    setTimeout(function() {
+      try {
+        // Essayer d'utiliser l'API Bootstrap si disponible
+        const bsAlert = bootstrap.Alert.getInstance(alertMessage);
+        if (bsAlert) {
+          bsAlert.close();
+        } else {
+          // Fallback manuel si l'instance n'existe pas
+          alertContainer.style.display = 'none';
+        }
+      } catch (err) {
+        // Fallback en cas d'erreur
+        console.error("Erreur lors de la fermeture de l'alerte:", err);
+        alertContainer.style.display = 'none';
+      }
+    }, 5000);
+  }
+
+  // Fonction pour afficher un avertissement avec une alerte Bootstrap
+  function showWarning(message) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    
+    // Configurer l'alerte
+    alertMessage.className = 'alert alert-warning alert-dismissible fade show';
+    alertText.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}`;
+    alertContainer.style.display = 'block';
+    
+    // Cette alerte importante ne disparaît pas automatiquement pour les avertissements importants
+  }
+  
+  // Fonction pour afficher une information avec une alerte Bootstrap
+  function showInfo(message) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertText = document.getElementById('alertText');
+    
+    // Configurer l'alerte
+    alertMessage.className = 'alert alert-info alert-dismissible fade show';
+    alertText.innerHTML = `<i class="bi bi-info-circle-fill me-2"></i> ${message}`;
+    alertContainer.style.display = 'block';
+    
+    // Masquer automatiquement après 5 secondes
+    setTimeout(function() {
+      try {
+        // Essayer d'utiliser l'API Bootstrap si disponible
+        const bsAlert = bootstrap.Alert.getInstance(alertMessage);
+        if (bsAlert) {
+          bsAlert.close();
+        } else {
+          // Fallback manuel si l'instance n'existe pas
+          alertContainer.style.display = 'none';
+        }
+      } catch (err) {
+        // Fallback en cas d'erreur
+        console.error("Erreur lors de la fermeture de l'alerte:", err);
+        alertContainer.style.display = 'none';
+      }
+    }, 5000);
+  }
+
+  // Fonction pour rechercher dans les commandes
+  function searchCommandes() {
+    const searchTerm = document.getElementById('searchCommandes').value.trim();
+    
+    if (!searchTerm) {
+      // Si la recherche est vide, revenir à l'onglet actif
+      loadCommandes(currentStatut);
+      return;
+    }
+    
+    // Afficher un indicateur de chargement
+    const tableBody = document.getElementById('commandesTableBody');
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="13" class="text-center py-4">
+          <div class="spinner-border text-primary me-2" role="status"></div>
+          <span>Recherche en cours...</span>
+        </td>
+      </tr>
+    `;
+    
+    // Désactiver temporairement le sélecteur de taille de page
+    document.getElementById('pageSize').disabled = true;
+    
+    // Appeler la fonction de recherche côté serveur
+    google.script.run
+      .withSuccessHandler(function(response) {
+        document.getElementById('pageSize').disabled = false;
+        
+        if (response.error) {
+          console.error('Erreur:', response.error);
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="13" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${response.error}
+              </td>
+            </tr>
+          `;
+          document.getElementById('affichageInfo').textContent = 'Aucune donnée disponible';
+          showError(response.error);
+          return;
+        }
+        
+        // Stocker toutes les commandes pour la pagination
+        allCommandes = response.commandes || [];
+        
+        // Si aucune commande trouvée
+        if (allCommandes.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="13" class="text-center py-4 text-muted">
+                <i class="bi bi-search me-2"></i>
+                Aucun résultat trouvé pour "${searchTerm}"
+              </td>
+            </tr>
+          `;
+          document.getElementById('affichageInfo').textContent = '0 - 0 / 0';
+          showInfo(`Aucun résultat pour "${searchTerm}"`);
+          return;
+        }
+        
+        // Afficher les commandes avec pagination
+        currentPage = 1; // Réinitialiser à la première page
+        displayPagedCommandes();
+        
+        // Afficher un message de succès
+        showInfo(`${allCommandes.length} résultat(s) trouvé(s) pour "${searchTerm}"`);
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors de la recherche:', error);
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="13" class="text-center text-danger py-4">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Erreur lors de la recherche
+            </td>
+          </tr>
+        `;
+        document.getElementById('affichageInfo').textContent = 'Aucune donnée disponible';
+        document.getElementById('pageSize').disabled = false;
+        
+        showError('Erreur lors de la recherche. Veuillez réessayer plus tard.');
+      })
+      .searchCommandes(searchTerm);
+  }
+
+  // Fonction pour obtenir les options des opérateurs
+  function getOperateursOptions() {
+    let optionsHtml = '<option value="" selected>Choisir...</option>';
+    
+    // Appeler le backend pour obtenir la liste des opérateurs
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          console.error('Erreur:', result.error);
+          return optionsHtml;
+        }
+        
+        // Générer les options à partir des opérateurs disponibles
+        result.operateurs.forEach(function(op) {
+          optionsHtml += `<option value="${op.value}">${op.nom}</option>`;
+        });
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors de la récupération des opérateurs:', error);
+      })
+      .getOperateursDisponibles();
+    
+    return optionsHtml;
+  }
+
+  // Fonction pour préparer l'affectation multiple
+  function prepareAffectationMultiple(commandeIds) {
+    // Mettre à jour le nombre de commandes sélectionnées
+    document.getElementById('nbCommandesSelectionnees').textContent = commandeIds.length;
+    
+    // Charger la liste des opérateurs
+    google.script.run
+      .withSuccessHandler(function(result) {
+        const select = document.getElementById('operateurMultiple');
+        select.innerHTML = '<option value="" selected>Choisir un opérateur...</option>';
+        
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        result.operateurs.forEach(function(op) {
+          select.innerHTML += `<option value="${op.value}">${op.nom}</option>`;
+        });
+
+        // Stocker les IDs des commandes à affecter
+        window.commandesAAffecterIds = commandeIds;
+        
+        // Afficher le modal
+        const modal = new bootstrap.Modal(document.getElementById('affecterMultipleModal'));
+        modal.show();
+      })
+      .withFailureHandler(function(error) {
+        showError('Erreur lors du chargement des opérateurs: ' + error);
+      })
+      .getOperateursDisponibles();
+  }
+
+  // Fonction pour confirmer l'affectation multiple
+  function confirmerAffectationMultiple() {
+    const operateur = document.getElementById('operateurMultiple').value;
+    if (!operateur) {
+      showError("Veuillez sélectionner un opérateur");
+      return;
+    }
+    
+    // Utiliser soit les commandes sélectionnées par checkbox, soit les commandes stockées
+    const commandesSelectionnees = window.commandesAAffecterIds || 
+      Array.from(document.querySelectorAll('.commande-checkbox:checked'))
+        .map(cb => cb.getAttribute('data-cmd-num'));
+    
+    // Désactiver le bouton pendant le traitement
+    const btnConfirm = document.querySelector('#affecterMultipleModal .btn-primary');
+    const originalText = btnConfirm.innerHTML;
+    btnConfirm.disabled = true;
+    btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Traitement...';
+    
+    // Appeler le backend pour assigner les commandes
+    google.script.run
+      .withSuccessHandler(function(result) {
+        // Réactiver le bouton
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = originalText;
+        
+        if (result.error) {
+          let errorMessage = result.error;
+          if (result.commandesInvalides && result.commandesInvalides.length > 0) {
+            errorMessage += "\n\nCommandes non affectées :";
+            result.commandesInvalides.forEach(cmd => {
+              errorMessage += `\n- ${cmd.numero}: ${cmd.raison}`;
+            });
+          }
+          showError(errorMessage);
+          return;
+        }
+        
+        // Fermer le modal
+        try {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('affecterMultipleModal'));
+          modal.hide();
+        } catch (err) {
+          console.error("Erreur lors de la fermeture du modal:", err);
+          document.getElementById('affecterMultipleModal').classList.remove('show');
+          document.getElementById('affecterMultipleModal').style.display = 'none';
+        }
+        
+        // Afficher le message de succès
+        let successMessage = result.message;
+        if (result.commandesInvalides && result.commandesInvalides.length > 0) {
+          successMessage += "\n\nNote: Certaines commandes n'ont pas pu être affectées :";
+          result.commandesInvalides.forEach(cmd => {
+            successMessage += `\n- ${cmd.numero}: ${cmd.raison}`;
+          });
+        }
+        showSuccess(successMessage);
+        
+        // Mettre à jour l'interface utilisateur immédiatement
+        if (result.commandesAffectees && result.commandesAffectees.length > 0) {
+          updateCommandeStatus(result.commandesAffectees, "Affectée", operateur);
+        }
+        
+        // Recharger les commandes pour mettre à jour l'affichage complet
+        setTimeout(function() {
+          loadCommandes(currentStatut);
+        }, 500);
+        
+        // Réinitialiser les sélections
+        document.getElementById('selectAllCommandes').checked = false;
+        updateBtnAffecterMultiple();
+        
+        // Nettoyer les commandes stockées
+        window.commandesAAffecterIds = null;
+      })
+      .withFailureHandler(function(error) {
+        // Réactiver le bouton
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = originalText;
+        showError("Erreur lors de l'assignation des commandes: " + error);
+      })
+      .assignerCommandes(commandesSelectionnees, operateur);
+  }
+
+  // Fonction pour mettre à jour le statut des commandes dans l'interface
+  function updateCommandeStatus(commandeIds, newStatus, operateur) {
+    const rows = document.querySelectorAll('#commandesTableBody tr');
+    let countNonAffectees = parseInt(document.getElementById('countNonAffectees').textContent);
+    let countAffectees = parseInt(document.getElementById('countAffectees').textContent);
+    let commandesModifiees = 0;
+    
+    rows.forEach(row => {
+      const checkbox = row.querySelector('.commande-checkbox');
+      if (checkbox && commandeIds.includes(checkbox.getAttribute('data-cmd-num'))) {
+        // Mettre à jour le statut
+        const statutCell = row.querySelector('td:nth-child(3)');
+        const operateurCell = row.querySelector('td:nth-child(4)');
+        if (statutCell) {
+          statutCell.innerHTML = `<span class="badge bg-success">Affectée</span>`;
+        }
+        if (operateurCell) {
+          operateurCell.textContent = operateur;
+        }
+        
+        // Mettre à jour l'apparence de la ligne
+        row.style.backgroundColor = '#d4edda';  // Fond vert pour les commandes affectées
+        
+        // Supprimer la checkbox
+        if (checkbox) {
+          checkbox.disabled = true;
+          checkbox.checked = false;
+        }
+        
+        // Mettre à jour les compteurs
+        if (currentStatut === "Non affectée") {
+          countNonAffectees--;
+          countAffectees++;
+          commandesModifiees++;
+        }
+      }
+    });
+    
+    // Mettre à jour les compteurs dans l'interface
+    if (commandesModifiees > 0) {
+      document.getElementById('countNonAffectees').textContent = Math.max(0, countNonAffectees);
+      document.getElementById('countAffectees').textContent = countAffectees;
+    }
+    
+    // Mettre à jour la visibilité du bouton d'affectation multiple
+    updateBtnAffecterMultiple();
+    
+    // Mettre à jour l'état du checkbox "Tout sélectionner"
+    updateSelectAllCheckbox();
+    
+    console.log(`Interface mise à jour: ${commandesModifiees} commande(s) modifiée(s)`);
+  }
+
+  // Gérer la sélection/désélection de toutes les commandes
+  document.getElementById('selectAllCommandes').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.commande-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = this.checked;
+    });
+    updateBtnAffecterMultiple();
+  });
+
+  // Mettre à jour l'état du checkbox "Tout sélectionner"
+  function updateSelectAllCheckbox() {
+    const checkboxes = document.querySelectorAll('.commande-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCommandes');
+    if (checkboxes.length === 0) {
+      selectAllCheckbox.checked = false;
+      selectAllCheckbox.disabled = true;
+    } else {
+      selectAllCheckbox.disabled = false;
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+      selectAllCheckbox.indeterminate = someChecked && !allChecked;
+    }
+  }
+
+  // Mettre à jour la visibilité du bouton d'affectation multiple
+  function updateBtnAffecterMultiple() {
+    const btn = document.getElementById('btnAffecterMultiple');
+    const checkboxes = document.querySelectorAll('.commande-checkbox:checked');
+    btn.style.display = checkboxes.length > 0 ? 'block' : 'none';
+  }
+
+  // Gérer le clic sur le bouton d'affectation multiple
+  document.getElementById('btnAffecterMultiple').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.commande-checkbox:checked');
+    const nbCommandes = checkboxes.length;
+    document.getElementById('nbCommandesSelectionnees').textContent = nbCommandes;
+    
+    // Charger la liste des opérateurs
+    google.script.run
+      .withSuccessHandler(function(result) {
+        const select = document.getElementById('operateurMultiple');
+        select.innerHTML = '<option value="" selected>Choisir un opérateur...</option>';
+        
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        
+        result.operateurs.forEach(function(op) {
+          select.innerHTML += `<option value="${op.value}">${op.nom}</option>`;
+        });
+        
+        // Afficher le modal
+        const modal = new bootstrap.Modal(document.getElementById('affecterMultipleModal'));
+        modal.show();
+      })
+      .withFailureHandler(function(error) {
+        showError('Erreur lors du chargement des opérateurs: ' + error);
+      })
+      .getOperateursDisponibles();
+  });
+
+  // Ajouter des écouteurs d'événements pour les checkboxes
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('commande-checkbox')) {
+      updateSelectAllCheckbox();
+      updateBtnAffecterMultiple();
+    }
+  });
+</script>

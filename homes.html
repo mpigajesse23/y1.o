@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Yoozak Rescue CMD</title>
+  <!-- Ajouter Chart.js avant nos scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Page d'accueil qui sera incluse dans bases.html via contentPlaceholder -->
+<div class="container-fluid my-4">
+  <!-- Section Admin -->
+  <div id="adminDashboard" style="display: none;">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <h2>
+          <i class="bi bi-speedometer2 me-2"></i>
+          Tableau de bord
+        </h2>
+      </div>
+    <div class="col-12">
+        <hr>
+    </div>
+  </div>
+
+    <div class="row">
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="card-title m-0">Commandes</h6>
+            <div class="dashboard-icon bg-primary-transparent">
+              <i class="bi bi-box text-primary"></i>
+            </div>
+          </div>
+            <h3 class="mb-1 dashboard-value" id="totalCommandes">--</h3>
+            <div id="evolutionTotal" class="small">
+              <i class="bi bi-arrow-right me-1"></i> Pas de variation
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="card-title m-0">Non affectées</h6>
+            <div class="dashboard-icon bg-warning-transparent">
+                <i class="bi bi-exclamation-circle text-warning"></i>
+              </div>
+            </div>
+            <h3 class="mb-1 dashboard-value" id="nonAffectees">--</h3>
+          <div class="text-warning small">
+              <i class="bi bi-clock me-1"></i> Nécessite une attention
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="card-title m-0">Affectées</h6>
+            <div class="dashboard-icon bg-success-transparent">
+              <i class="bi bi-check-circle text-success"></i>
+            </div>
+          </div>
+            <h3 class="mb-1 dashboard-value" id="affectees">--</h3>
+          <div class="text-success small">
+              <i class="bi bi-check-all me-1"></i> En traitement
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="card-title m-0">Opérateurs connectés</h6>
+            <div class="dashboard-icon bg-info-transparent">
+              <i class="bi bi-people text-info"></i>
+              </div>
+            </div>
+            <h3 class="mb-1 dashboard-value" id="operateursActifs">--</h3>
+            <div class="text-info small" id="operateursTotal">
+              <i class="bi bi-circle-fill text-success me-1 blink"></i> <span id="operateursRatio">-- sur --</span> opérateurs
+            </div>
+            <div class="text-muted smaller mt-1">
+              <i class="bi bi-clock-history me-1"></i> Déconnexion auto après 30min
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Opérateur -->
+  <div id="operateurDashboard" style="display: none;">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <h2>
+          <i class="bi bi-person-workspace me-2"></i>
+          Mon espace de travail
+        </h2>
+      </div>
+      <div class="col-12">
+        <hr>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 col-sm-6 mb-3">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="card-title m-0">Mes commandes</h6>
+              <div class="dashboard-icon bg-primary-transparent">
+                <i class="bi bi-inbox text-primary"></i>
+              </div>
+            </div>
+            <h3 class="mb-1 dashboard-value" id="mesCommandes">--</h3>
+            <div class="small text-muted">
+              <i class="bi bi-box me-1"></i> Commandes assignées
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6 mb-3">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="card-title m-0">En attente</h6>
+              <div class="dashboard-icon bg-warning-transparent">
+                <i class="bi bi-hourglass-split text-warning"></i>
+              </div>
+            </div>
+            <h3 class="mb-1 dashboard-value" id="commandesEnAttente">--</h3>
+            <div class="small text-warning">
+              <i class="bi bi-clock-history me-1"></i> À traiter
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6 mb-3">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="card-title m-0">Traitées</h6>
+              <div class="dashboard-icon bg-success-transparent">
+                <i class="bi bi-check2-all text-success"></i>
+              </div>
+            </div>
+            <h3 class="mb-1 dashboard-value" id="commandesTraitees">--</h3>
+            <div class="small text-success">
+              <i class="bi bi-check-circle me-1"></i> Complétées
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphiques et tableaux -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mb-4 mb-lg-0">
+      <div class="card h-100 slide-in-left" style="--delay: 0.2s">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0"><i class="bi bi-bar-chart me-2"></i>Évolution des commandes</h5>
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-primary active" id="day-view">Jour</button>
+              <button type="button" class="btn btn-outline-primary" id="week-view">Semaine</button>
+              <button type="button" class="btn btn-outline-primary" id="month-view">Mois</button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="chart-container" class="chart-placeholder" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="commandesChart" style="width: 100%; height: 100%;"></canvas>
+            <div class="text-center chart-loading">
+              <i class="bi bi-graph-up" style="font-size: 5rem; color: var(--border-color);"></i>
+              <p class="text-muted mt-3">Les données de graphique seront bientôt disponibles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card h-100 slide-in-right" style="--delay: 0.3s">
+        <div class="card-header">
+          <h5 class="card-title m-0"><i class="bi bi-bell me-2"></i>Notifications récentes</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="notifications-list">
+            <div class="notification-item">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <div class="notification-icon bg-success-transparent">
+                    <i class="bi bi-check-circle text-success"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Nouvelle commande assignée</h6>
+                    <small class="text-muted">11:45</small>
+                  </div>
+                  <p class="mb-0 small text-muted">La commande #YCN-548712 a été assignée</p>
+                </div>
+              </div>
+            </div>
+            <div class="notification-item">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <div class="notification-icon bg-danger-transparent">
+                    <i class="bi bi-exclamation-circle text-danger"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Erreur signalée</h6>
+                    <small class="text-muted">Hier</small>
+                  </div>
+                  <p class="mb-0 small text-muted">La commande #YCN-548703 contient des données incorrectes</p>
+                </div>
+              </div>
+            </div>
+            <div class="notification-item">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                  <div class="notification-icon bg-primary-transparent">
+                    <i class="bi bi-info-circle text-primary"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Mise à jour système</h6>
+                    <small class="text-muted">Il y a 2 jours</small>
+                  </div>
+                  <p class="mb-0 small text-muted">Le système a été mis à jour avec de nouvelles fonctionnalités</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-end">
+          <a href="#" class="btn btn-sm btn-primary">
+            <i class="bi bi-bell me-1"></i> Voir toutes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dernières commandes -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card slide-in-up" style="--delay: 0.4s">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0"><i class="bi bi-list-ul me-2"></i>Dernières commandes</h5>
+            <button class="btn btn-sm btn-primary">
+              <i class="bi bi-arrow-right me-1"></i> Voir toutes
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-3">N° Commande</th>
+                  <th>Client</th>
+                  <th>Statut</th>
+                  <th>Produit</th>
+                  <th>Date</th>
+                  <th class="text-end pe-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="table-row-animated" style="--delay: 0.1s">
+                  <td class="ps-3 fw-medium">YCN-548712</td>
+                  <td>Mohamed Alami</td>
+                  <td><span class="badge bg-success">Affecté</span></td>
+                  <td class="text-truncate" style="max-width: 200px;">ESP HOM YZ650 - 42/أسود لنيت</td>
+                  <td class="text-muted small">12/07/2023</td>
+                  <td class="text-end pe-3">
+                    <button class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="table-row-animated" style="--delay: 0.2s">
+                  <td class="ps-3 fw-medium">YCN-548711</td>
+                  <td>Samira Bekkali</td>
+                  <td><span class="badge bg-warning text-dark">Non affectée</span></td>
+                  <td class="text-truncate" style="max-width: 200px;">SAB FEM YZ53 - 37/لبني</td>
+                  <td class="text-muted small">12/07/2023</td>
+                  <td class="text-end pe-3">
+                    <button class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="table-row-animated" style="--delay: 0.3s">
+                  <td class="ps-3 fw-medium">YCN-548710</td>
+                  <td>Karim Benjelloun</td>
+                  <td><span class="badge bg-danger">Erronée</span></td>
+                  <td class="text-truncate" style="max-width: 200px;">SDL HOM YZ740 - 44/noir</td>
+                  <td class="text-muted small">11/07/2023</td>
+                  <td class="text-end pe-3">
+                    <button class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="table-row-animated" style="--delay: 0.4s">
+                  <td class="ps-3 fw-medium">YCN-548709</td>
+                  <td>Fatima Zahra Nadori</td>
+                  <td><span class="badge bg-info text-dark">Doublon</span></td>
+                  <td class="text-truncate" style="max-width: 200px;">ESP HOM YZ650 - 41/الأزرق</td>
+                  <td class="text-muted small">11/07/2023</td>
+                  <td class="text-end pe-3">
+                    <button class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+              <i class="bi bi-info-circle me-1"></i> Affichage des 4 dernières commandes sur un total de 124
+            </small>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <button class="btn btn-outline-secondary">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Variables globales pour le graphique
+  let commandesChart = null;
+  let currentPeriod = 'jour';
+
+  // Fonction pour initialiser le tableau de bord selon le rôle
+  function initializeDashboard() {
+    const userRole = '<?= role ?>'; // Le rôle sera injecté par le backend
+    const userName = '<?= user ?>'; // Le nom sera injecté par le backend
+    
+    // Afficher le tableau de bord approprié
+    if (userRole === 'admin') {
+      document.getElementById('adminDashboard').style.display = 'block';
+      document.getElementById('operateurDashboard').style.display = 'none';
+    } else {
+      document.getElementById('adminDashboard').style.display = 'none';
+      document.getElementById('operateurDashboard').style.display = 'block';
+    }
+    
+    // Charger les statistiques appropriées
+    loadDashboardStats(userRole);
+  }
+
+  // Fonction pour charger les statistiques
+  function loadDashboardStats(role) {
+    if (role === 'admin') {
+      loadAdminStats();
+    } else {
+      loadOperateurStats();
+    }
+  }
+
+  // Charger les statistiques pour l'admin
+  function loadAdminStats() {
+    google.script.run
+      .withSuccessHandler(function(stats) {
+        if (stats.error) {
+          console.error('Erreur:', stats.error);
+          return;
+        }
+        
+        document.getElementById('totalCommandes').textContent = stats.total || '0';
+        document.getElementById('nonAffectees').textContent = stats.nonAffectees || '0';
+        document.getElementById('affectees').textContent = stats.affectees || '0';
+        document.getElementById('operateursActifs').textContent = stats.operateursActifs || '0';
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+      })
+      .getDashboardStats();
+  }
+
+  // Charger les statistiques pour l'opérateur
+  function loadOperateurStats() {
+    google.script.run
+      .withSuccessHandler(function(stats) {
+        if (stats.error) {
+          console.error('Erreur:', stats.error);
+          return;
+        }
+        
+        document.getElementById('mesCommandes').textContent = stats.total || '0';
+        document.getElementById('commandesEnAttente').textContent = stats.enAttente || '0';
+        document.getElementById('commandesTraitees').textContent = stats.traitees || '0';
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+      })
+      .getOperateurStats();
+  }
+
+  // Initialiser le tableau de bord au chargement de la page
+  document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+  // Au chargement de la page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser le graphique
+    initChart();
+    
+    // Gestionnaires d'événements pour les boutons de période
+    document.getElementById('day-view').addEventListener('click', function() {
+      updateChartPeriod('jour');
+  });
+  
+    document.getElementById('week-view').addEventListener('click', function() {
+      updateChartPeriod('semaine');
+    });
+    
+    document.getElementById('month-view').addEventListener('click', function() {
+      updateChartPeriod('mois');
+    });
+  });
+  
+  // Fonction pour initialiser le graphique
+  function initChart() {
+    const ctx = document.getElementById('commandesChart').getContext('2d');
+    commandesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Commandes',
+          data: [],
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1,
+          fill: true,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)'
+        }]
+      },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            ticks: {
+              stepSize: 1
+              }
+            }
+        }
+      }
+    });
+    
+    // Charger les données initiales
+    updateChartData();
+  }
+
+  // Fonction pour mettre à jour la période du graphique
+  function updateChartPeriod(periode) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    switch(periode) {
+      case 'jour':
+        document.getElementById('day-view').classList.add('active');
+        break;
+      case 'semaine':
+        document.getElementById('week-view').classList.add('active');
+        break;
+      case 'mois':
+        document.getElementById('month-view').classList.add('active');
+        break;
+    }
+    
+    currentPeriod = periode;
+    updateChartData();
+  }
+  
+  // Fonction pour mettre à jour les données du graphique
+  function updateChartData() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.error) {
+          console.error('Erreur:', result.error);
+          return;
+        }
+        
+        // Mettre à jour le graphique
+        commandesChart.data.labels = result.labels;
+        commandesChart.data.datasets[0].data = result.data;
+        commandesChart.update();
+        
+        // Masquer l'indicateur de chargement
+        document.querySelector('.chart-loading').style.display = 'none';
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors de la mise à jour du graphique:', error);
+      })
+      .getEvolutionData(currentPeriod);
+  }
+
+  function updateOperateurStats(stats) {
+    if (!stats) return;
+    
+    const operateursActifs = document.getElementById('operateursActifs');
+    const operateursTotal = document.getElementById('operateursTotal');
+    
+    if (operateursActifs) {
+      operateursActifs.textContent = stats.actifs || '0';
+    }
+    
+    if (operateursTotal) {
+      const total = stats.total || 0;
+      const actifs = stats.actifs || 0;
+      operateursTotal.innerHTML = `<i class="bi bi-circle-fill text-success me-1 blink"></i> ${actifs} sur ${total} connectés`;
+    }
+  }
+
+  // Fonction pour rafraîchir les statistiques toutes les 30 secondes
+  function startStatsRefresh() {
+    // Première mise à jour immédiate
+    refreshStats();
+      
+    // Mise à jour toutes les 30 secondes
+    setInterval(refreshStats, 30000);
+  }
+
+  function refreshStats() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        updateDashboardStats(result);
+        updateOperateurStats(result.operateurs);
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors de la mise à jour des statistiques:', error);
+      })
+      .getDashboardStats();
+  }
+
+  // Démarrer le rafraîchissement automatique au chargement de la page
+  document.addEventListener('DOMContentLoaded', startStatsRefresh);
+
+  // Fonction pour mettre à jour le compteur des opérateurs
+  function updateOperateursCount(data) {
+    if (!data || !data.operateurs) return;
+    
+    const actifs = document.getElementById('operateursActifs');
+    const ratio = document.getElementById('operateursRatio');
+    const indicator = document.querySelector('.bi-circle-fill');
+    const infoText = document.querySelector('.text-muted.smaller');
+      
+    // Mise à jour des compteurs
+    actifs.textContent = data.operateurs.actifs || '0';
+    ratio.textContent = `${data.operateurs.actifs || '0'} sur ${data.operateurs.total || '0'}`;
+    
+    // Mise à jour de l'indicateur visuel
+    if (data.operateurs.actifs > 0) {
+      indicator.classList.remove('text-danger');
+      indicator.classList.add('text-success', 'blink');
+    } else {
+      indicator.classList.remove('text-success', 'blink');
+      indicator.classList.add('text-danger');
+    }
+
+    // Mise à jour du texte d'info
+    if (infoText) {
+      infoText.innerHTML = `<i class="bi bi-clock-history me-1"></i> Déconnexion auto après 30min d'inactivité`;
+    }
+  }
+  
+  // Rafraîchir les statistiques toutes les 30 secondes
+  setInterval(() => {
+    google.script.run
+      .withSuccessHandler((result) => {
+        if (result && !result.error) {
+          updateOperateursCount(result);
+          console.log("Statistiques des opérateurs mises à jour:", result);
+        } else {
+          console.error("Erreur lors de la mise à jour des statistiques:", result?.error);
+        }
+      })
+      .withFailureHandler((error) => console.error('Erreur:', error))
+      .getDashboardStats();
+  }, 30000);
+
+  // Initialisation au chargement de la page
+  google.script.run
+    .withSuccessHandler((result) => {
+      if (result && !result.error) {
+        updateOperateursCount(result);
+        console.log("Statistiques initiales chargées:", result);
+      } else {
+        console.error("Erreur lors du chargement initial des statistiques:", result?.error);
+      }
+    })
+    .withFailureHandler((error) => console.error('Erreur:', error))
+    .getDashboardStats();
+
+  // Fonction pour mettre à jour les statistiques du tableau de bord
+  function updateDashboardStats(stats) {
+    if (stats.error) {
+      console.error('Erreur:', stats.error);
+      return;
+    }
+
+    // Mettre à jour les compteurs de commandes
+    document.getElementById('totalCommandes').textContent = stats.total || '0';
+    document.getElementById('nonAffectees').textContent = stats.nonAffectees || '0';
+    document.getElementById('affectees').textContent = stats.affectees || '0';
+
+    // Mettre à jour l'évolution
+    const evolution = document.getElementById('evolutionTotal');
+    if (stats.evolution) {
+      const variation = stats.evolution.variation;
+      let evolutionText = '';
+      let iconClass = '';
+
+      if (variation > 0) {
+        evolutionText = `+${variation}% par rapport à hier`;
+        iconClass = 'bi-arrow-up-right text-success';
+      } else if (variation < 0) {
+        evolutionText = `${variation}% par rapport à hier`;
+        iconClass = 'bi-arrow-down-right text-danger';
+      } else {
+        evolutionText = 'Pas de variation';
+        iconClass = 'bi-arrow-right text-muted';
+      }
+
+      evolution.innerHTML = `<i class="bi ${iconClass} me-1"></i> ${evolutionText}`;
+    }
+
+    // Mettre à jour les statistiques des opérateurs
+    if (stats.operateurs) {
+      const operateursActifs = document.getElementById('operateursActifs');
+      const operateursRatio = document.getElementById('operateursRatio');
+      const operateursTotal = document.getElementById('operateursTotal');
+      const indicateurConnexion = operateursTotal.querySelector('.bi-circle-fill');
+
+      // Mettre à jour le nombre d'opérateurs actifs
+      operateursActifs.textContent = stats.operateurs.actifs || '0';
+
+      // Mettre à jour le ratio et le texte
+      const actifs = stats.operateurs.actifs || 0;
+      const total = stats.operateurs.total || 0;
+      operateursRatio.textContent = `${actifs} sur ${total}`;
+
+      // Mettre à jour l'indicateur de connexion
+      if (actifs > 0) {
+        indicateurConnexion.classList.remove('text-danger');
+        indicateurConnexion.classList.add('text-success', 'blink');
+      } else {
+        indicateurConnexion.classList.remove('text-success', 'blink');
+        indicateurConnexion.classList.add('text-danger');
+      }
+    }
+  }
+  
+  // Fonction pour initialiser le graphique
+  function initChart() {
+    const ctx = document.getElementById('commandesChart').getContext('2d');
+    if (!ctx) return;
+    
+    // Créer le graphique
+    window.commandesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Commandes',
+          data: [],
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+      }
+          }
+        }
+      }
+    });
+  }
+
+  // Fonction pour mettre à jour le graphique
+  function updateChart(periode) {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (!result || !window.commandesChart) return;
+        
+        window.commandesChart.data.labels = result.labels;
+        window.commandesChart.data.datasets[0].data = result.data;
+        window.commandesChart.update();
+      })
+      .withFailureHandler(function(error) {
+        console.error('Erreur lors de la mise à jour du graphique:', error);
+      })
+      .getEvolutionData(periode);
+  }
+
+  // Fonction pour démarrer le rafraîchissement automatique
+  function startStatsRefresh() {
+    // Première mise à jour
+    google.script.run
+      .withSuccessHandler(updateDashboardStats)
+      .withFailureHandler(function(error) {
+        console.error('Erreur:', error);
+      })
+      .getDashboardStats();
+    
+    // Rafraîchissement toutes les 30 secondes
+    setInterval(function() {
+      google.script.run
+        .withSuccessHandler(updateDashboardStats)
+        .withFailureHandler(function(error) {
+          console.error('Erreur:', error);
+        })
+        .getDashboardStats();
+    }, 30000);
+    }
+    
+  // Initialisation au chargement de la page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser le graphique
+    initChart();
+    
+    // Démarrer le rafraîchissement des stats
+    startStatsRefresh();
+      
+    // Mettre à jour le graphique initial
+    updateChart('jour');
+    
+    // Gestionnaires d'événements pour les boutons de période
+    document.getElementById('day-view').addEventListener('click', function() {
+      updateChart('jour');
+    });
+    
+    document.getElementById('week-view').addEventListener('click', function() {
+      updateChart('semaine');
+    });
+    
+    document.getElementById('month-view').addEventListener('click', function() {
+      updateChart('mois');
+    });
+  });
+</script>
+
+<style>
+  /* Styles spécifiques à la page d'accueil */
+  .dashboard-icon, .notification-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .bg-primary-transparent {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .bg-success-transparent {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+  
+  .bg-warning-transparent {
+    background-color: rgba(255, 193, 7, 0.1);
+  }
+  
+  .bg-danger-transparent {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+  
+  .bg-info-transparent {
+    background-color: rgba(13, 202, 240, 0.1);
+  }
+  
+  .dashboard-value {
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .notifications-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .notification-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+  }
+  
+  .notification-item:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+  
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+  
+  /* Animation pour le chargement du graphique */
+  .chart-placeholder.loading {
+    opacity: 0.6;
+  }
+  
+  .chart-placeholder.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+  }
+  
+  /* Animation pour les lignes du tableau */
+  .table-row-animated {
+    animation: fadeInUp 0.5s ease-out;
+    animation-delay: calc(var(--delay, 0) * 1s);
+    animation-fill-mode: both;
+  }
+  
+  /* Animations personnalisées */
+  .slide-in-up {
+    animation: fadeInUp 0.5s ease-out;
+    animation-delay: calc(var(--delay, 0) * 1s);
+    animation-fill-mode: both;
+  }
+  
+  .slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+    animation-delay: calc(var(--delay, 0) * 1s);
+    animation-fill-mode: both;
+  }
+  
+  .slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+    animation-delay: calc(var(--delay, 0) * 1s);
+    animation-fill-mode: both;
+  }
+  
+  /* Animation pour l'icône de rotation */
+  .spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Adaptation pour les petits écrans */
+  @media (max-width: 576px) {
+    .dashboard-value {
+      font-size: 1.5rem;
+    }
+    
+    .card-title {
+      font-size: 0.9rem;
+    }
+    
+    .dashboard-icon, .notification-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 0.9rem;
+    }
+  }
+
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+  
+  .blink {
+    animation: blink 2s ease-in-out infinite;
+  }
+  
+  .bg-info-transparent {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+  }
+  
+  .text-info {
+    color: #0dcaf0 !important;
+  }
+
+  /* Animation de clignotement pour l'indicateur de connexion */
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+
+  .blink {
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .smaller {
+    font-size: 0.75rem;
+  }
+
+  /* Style pour la carte des opérateurs */
+  .dashboard-card {
+    transition: all 0.3s ease;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  /* Indicateur de statut */
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  .status-active {
+    background-color: #28a745;
+  }
+
+  .status-inactive {
+    background-color: #dc3545;
+  }
+
+  /* Couleurs pour les indicateurs d'état */
+  .text-success {
+    color: #198754 !important;
+  }
+
+  .text-danger {
+    color: #dc3545 !important;
+  }
+
+  .text-muted {
+    color: #6c757d !important;
+  }
+
+  /* Adaptation pour les petits écrans */
+  @media (max-width: 576px) {
+    #operateursRatio {
+      font-size: 0.85rem;
+    }
+    
+    .smaller {
+      font-size: 0.7rem;
+    }
+  }
+</style>
+
+</body>
+</html> 

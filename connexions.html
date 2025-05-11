@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <title>Connexion - Yoozak Rescue CMD</title>
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --primary-dark: #0a58ca;
+      --primary-gradient: linear-gradient(135deg, #0d6efd, #0a47ca);
+      --secondary-color: #6c757d;
+      --transition-speed: 0.3s;
+      --theme-bg: #f8f9fa;
+      --theme-text: #212529;
+    }
+    
+    [data-theme="dark"] {
+      --theme-bg: #212529;
+      --theme-text: #f8f9fa;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--theme-bg) url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&q=80&w=1080') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      color: var(--theme-text);
+      transition: all 0.3s ease;
+    }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 0;
+    }
+    
+    .login-container {
+      max-width: 420px;
+      width: 90%;
+      padding: 30px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
+      transform: translateY(0);
+      transition: all 0.5s;
+      backdrop-filter: blur(10px);
+    }
+    
+    [data-theme="dark"] .login-container {
+      background-color: rgba(33, 37, 41, 0.95);
+      color: #fff;
+    }
+    
+    .login-logo {
+      text-align: center;
+      margin-bottom: 30px;
+      animation: fadeInDown 0.8s;
+    }
+    
+    .login-logo-icon {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      width: 90px;
+      height: 90px;
+      background: var(--primary-gradient);
+      color: white;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    .login-button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+      transition: all 0.3s;
+      background: var(--primary-gradient);
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .login-button:hover::after {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3);
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    .input-group:focus-within {
+      box-shadow: 0 3px 12px rgba(13, 110, 253, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    .input-group-text {
+      width: 45px;
+      justify-content: center;
+      background-color: #f8f9fa;
+      border-right: none;
+      transition: all 0.3s;
+    }
+    
+    [data-theme="dark"] .input-group-text {
+      background-color: #343a40;
+      color: #fff;
+      border-color: #495057;
+    }
+    
+    .form-control {
+      border-left: none;
+      padding: 12px 16px;
+      transition: all 0.3s;
+    }
+    
+    [data-theme="dark"] .form-control {
+      background-color: #343a40;
+      color: #fff;
+      border-color: #495057;
+    }
+    
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #ced4da;
+    }
+    
+    [data-theme="dark"] .form-control:focus {
+      border-color: #495057;
+    }
+    
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: -16px;
+      margin-bottom: 16px;
+      transition: all 0.3s;
+      background: #e9ecef;
+    }
+    
+    .password-strength div {
+      height: 100%;
+      border-radius: 2px;
+      transition: all 0.3s;
+      width: 0;
+    }
+    
+    .password-strength.weak div { width: 33%; background: #dc3545; }
+    .password-strength.medium div { width: 66%; background: #ffc107; }
+    .password-strength.strong div { width: 100%; background: #198754; }
+    
+    .theme-switch {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .theme-switch:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(180deg);
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @media (max-width: 576px) {
+      .login-container {
+        width: 95%;
+        padding: 20px;
+      }
+      
+      .login-logo-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<button class="theme-switch" onclick="toggleTheme()" title="Changer de thème">
+  <i class="bi bi-moon-fill"></i>
+</button>
+
+<div class="login-container">
+  <div class="login-logo">
+    <div class="login-logo-icon">
+      <i class="bi bi-shield-check"></i>
+    </div>
+    <h2>Yoozak Rescue CMD</h2>
+    <p class="text-muted">Système de Gestion des Commandes</p>
+    <div class="badge bg-light text-dark p-2 mb-3">
+      <i class="bi bi-people-fill me-1"></i> Multi-utilisateurs | <i class="bi bi-key-fill me-1"></i> Rôles multiples
+    </div>
+  </div>
+
+  <div id="loginForm">
+    <div class="mb-3">
+      <label for="username" class="form-label">Nom d'utilisateur</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+        <input type="text" class="form-control" id="username" placeholder="Entrez votre nom d'utilisateur" autocomplete="username">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Mot de passe</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+        <input type="password" class="form-control" id="password" placeholder="Entrez votre mot de passe" autocomplete="current-password">
+        <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Afficher/masquer le mot de passe">
+          <i class="bi bi-eye" id="toggleIcon"></i>
+        </button>
+      </div>
+      <div class="password-strength">
+        <div></div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary login-button" onclick="handleLogin()">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Connexion
+    </button>
+    
+    <div id="loginAlert" class="alert login-alert mt-3" style="display: none;">
+      Nom d'utilisateur ou mot de passe incorrect.
+    </div>
+    
+    <!-- Message d'erreur de session si présent -->
+    <? if (typeof errorMessage !== 'undefined' && errorMessage) { ?>
+    <div class="alert alert-danger login-alert">
+      <i class="bi bi-exclamation-triangle me-2"></i><?= errorMessage ?>
+    </div>
+    <? } ?>
+    
+    <!-- Comptes de démonstration -->
+    <div class="login-demo-accounts mt-4">
+      <h6><i class="bi bi-info-circle me-1"></i>Comptes pour test rapide</h6>
+      <div class="row g-2">
+        <div class="col-6">
+          <button class="btn btn-sm btn-outline-primary w-100 mb-2 btn-demo" onclick="fillDemoAccount('Jesse', 'admin')">
+            <i class="bi bi-person-badge me-1"></i> Admin (Jesse)
+          </button>
+        </div>
+        <div class="col-6">
+          <button class="btn btn-sm btn-outline-success w-100 mb-2 btn-demo" onclick="fillDemoAccount('Emmanuel', 'opérateur')">
+            <i class="bi bi-person-workspace me-1"></i> Opérateur
+          </button>
+        </div>
+      </div>
+      <div class="alert alert-light p-2 mt-2 mb-0 small">
+        <i class="bi bi-key me-1"></i> Mot de passe pour ces comptes: <code>password123</code>
+      </div>
+    </div>
+  </div>
+  
+  <div id="loadingState" style="display: none; text-align: center;">
+    <div class="spinner-border text-primary my-4" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Connexion en cours...</span>
+    </div>
+    <h5 class="mb-3">Connexion en cours</h5>
+    <p class="text-muted">Vérification de vos identifiants...</p>
+    <div class="progress mt-3" style="height: 6px;">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+  </div>
+  
+  <div class="login-footer mt-4 text-center">
+    <div class="mb-1">Yoozak Rescue CMD &copy; 2023</div>
+    <div><i class="bi bi-shield-lock me-1"></i>Connexion sécurisée</div>
+  </div>
+</div>
+
+<script>
+  // Fonction pour basculer entre les thèmes
+  function toggleTheme() {
+    const body = document.body;
+    const themeIcon = document.querySelector('.theme-switch i');
+    
+    if (body.getAttribute('data-theme') === 'dark') {
+      body.removeAttribute('data-theme');
+      themeIcon.classList.remove('bi-sun-fill');
+      themeIcon.classList.add('bi-moon-fill');
+      localStorage.setItem('theme', 'light');
+    } else {
+      body.setAttribute('data-theme', 'dark');
+      themeIcon.classList.remove('bi-moon-fill');
+      themeIcon.classList.add('bi-sun-fill');
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+
+  // Vérifier et appliquer le thème au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-switch i').classList.replace('bi-moon-fill', 'bi-sun-fill');
+    }
+    
+    // Focus sur le champ username
+    document.getElementById('username').focus();
+    
+    // Gestionnaire pour afficher/masquer le mot de passe
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      var passwordInput = document.getElementById('password');
+      var toggleIcon = document.getElementById('toggleIcon');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('bi-eye');
+        toggleIcon.classList.add('bi-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('bi-eye-slash');
+        toggleIcon.classList.add('bi-eye');
+      }
+    });
+
+    // Vérification de la force du mot de passe
+    document.getElementById('password').addEventListener('input', function(e) {
+      const password = e.target.value;
+      const strengthBar = document.querySelector('.password-strength');
+      
+      // Réinitialiser les classes
+      strengthBar.className = 'password-strength';
+      
+      if (password.length === 0) {
+        return;
+      }
+      
+      // Critères de force
+      const hasLower = /[a-z]/.test(password);
+      const hasUpper = /[A-Z]/.test(password);
+      const hasNumber = /\d/.test(password);
+      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      const isLongEnough = password.length >= 8;
+      
+      const strength = [hasLower, hasUpper, hasNumber, hasSpecial, isLongEnough]
+        .filter(Boolean).length;
+      
+      if (strength <= 2) {
+        strengthBar.classList.add('weak');
+      } else if (strength <= 4) {
+        strengthBar.classList.add('medium');
+      } else {
+        strengthBar.classList.add('strong');
+      }
+    });
+  });
+
+  // Fonction pour pré-remplir les comptes de démonstration
+  function fillDemoAccount(username, role) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = 'password123';
+    
+    // Effet visuel de mise en évidence des champs
+    document.getElementById('username').classList.add('is-valid');
+    document.getElementById('password').classList.add('is-valid');
+    
+    // Suggérer à l'utilisateur de cliquer sur le bouton de connexion
+    const loginButton = document.querySelector('.login-button');
+    loginButton.classList.add('pulse');
+    
+    // Enlever l'animation après un court délai
+    setTimeout(function() {
+      loginButton.classList.remove('pulse');
+    }, 1000);
+    
+    // Fermer toute alerte précédente
+    document.getElementById('loginAlert').style.display = 'none';
+    
+    // Simuler la vérification du mot de passe
+    const strengthBar = document.querySelector('.password-strength');
+    strengthBar.className = 'password-strength medium';
+  }
+
+  function handleLogin() {
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value;
+    
+    // Vérifier que les champs ne sont pas vides
+    if (!username || !password) {
+      showLoginAlert('Veuillez remplir tous les champs.');
+      return;
+    }
+    
+    // Afficher l'état de chargement avec animation
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    
+    // Appeler la fonction d'authentification
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          showLoginAlert('Connexion réussie!', 'success');
+          document.getElementById('loginForm').style.display = 'none';
+          document.getElementById('loadingState').style.display = 'none';
+
+          try {
+            // Utiliser window.top pour la redirection
+            if (window.top && window.top.location) {
+              window.top.location.href = result.redirectUrl;
+            } else {
+              // Fallback si window.top n'est pas disponible
+              window.location.href = result.redirectUrl;
+            }
+          } catch (error) {
+            console.error("Erreur lors de la redirection:", error);
+            showLoginAlert('Erreur lors de la redirection. Veuillez réessayer ou contacter l\'administrateur.');
+            
+            // Afficher un bouton de redirection manuel
+            const manualRedirectBtn = document.createElement('button');
+            manualRedirectBtn.className = 'btn btn-primary mt-3';
+            manualRedirectBtn.textContent = 'Cliquez ici pour continuer';
+            manualRedirectBtn.onclick = function() {
+              window.open(result.redirectUrl, '_top');
+            };
+            document.getElementById('loginAlert').appendChild(manualRedirectBtn);
+          }
+        } else {
+          document.getElementById('loginForm').style.display = 'block';
+          document.getElementById('loadingState').style.display = 'none';
+          showLoginAlert(result && result.message ? result.message : 'Erreur d\'authentification.');
+        }
+      })
+      .withFailureHandler(function(error) {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('loadingState').style.display = 'none';
+        showLoginAlert('Erreur de connexion: ' + error);
+      })
+      .authentifier(username, password);
+  }
+  
+  function showLoginAlert(message, type = 'error') {
+    var alertElement = document.getElementById('loginAlert');
+    alertElement.textContent = '';
+    
+    var icon = document.createElement('i');
+    icon.className = type === 'success' ? 'bi bi-check-circle-fill me-2' : 'bi bi-exclamation-triangle-fill me-2';
+    alertElement.appendChild(icon);
+    
+    alertElement.appendChild(document.createTextNode(message));
+    
+    if (type === 'success') {
+      alertElement.className = 'alert alert-success login-alert mt-3';
+    } else {
+      alertElement.className = 'alert alert-danger login-alert mt-3';
+    }
+    
+    alertElement.style.display = 'block';
+    alertElement.style.animation = 'fadeInDown 0.5s';
+  }
+
+  // Gestionnaire pour la touche Entrée
+  document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+</script>
+
+</body>
+</html> 

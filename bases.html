@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <title>Yoozak Rescue CMD</title>
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --primary-dark: #0a58ca;
+      --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      --sidebar-width: 250px;
+      --sidebar-collapsed-width: 60px;
+      --top-nav-height: 56px;
+      --transition-speed: 0.3s;
+      --content-max-width: 1400px;
+      
+      /* Variables de couleur RGB pour les opérations d'opacité */
+      --primary-color-rgb: 13, 110, 253;
+      --bg-color-rgb: 248, 249, 250;
+      --text-color-rgb: 33, 37, 41;
+      
+      /* Nouvelles variables de thème */
+      --bg-color: #f8f9fa;
+      --text-color: #212529;
+      --card-bg: #ffffff;
+      --border-color: #dee2e6;
+      --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+      --shadow-md: 0 .5rem 1rem rgba(0,0,0,.15);
+      --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
+    }
+    
+    [data-theme="dark"] {
+      --bg-color: #212529;
+      --bg-color-rgb: 33, 37, 41;
+      --text-color: #f8f9fa;
+      --text-color-rgb: 248, 249, 250;
+      --card-bg: #2c3034;
+      --border-color: #495057;
+      --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.15);
+      --shadow-md: 0 .5rem 1rem rgba(0,0,0,.25);
+      --shadow-lg: 0 1rem 3rem rgba(0,0,0,.3);
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+    
+    .container-fluid {
+      max-width: var(--content-max-width);
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      top: var(--top-nav-height);
+      left: 0;
+      z-index: 100;
+      transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+      width: var(--sidebar-width);
+      background-color: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar.collapsed .menu-text {
+      display: none;
+    }
+    
+    .sidebar.collapsed .list-group-item-action {
+      text-align: center;
+      padding: 0.75rem;
+    }
+    
+    .sidebar.collapsed .list-group-item-action i {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    
+    .content-area {
+      margin-left: var(--sidebar-width);
+      transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 20px;
+      min-height: calc(100vh - var(--top-nav-height));
+      width: auto;
+    }
+    
+    .content-area.expanded {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: var(--primary-color);
+    }
+    
+    .loading-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .sidebar-toggle {
+      position: fixed;
+      left: var(--sidebar-width);
+      top: calc(var(--top-nav-height) + 10px);
+      z-index: 101;
+      transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 0 8px 8px 0;
+      padding: 8px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      height: 32px;
+      cursor: pointer;
+    }
+    
+    .sidebar-toggle:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateX(2px);
+    }
+    
+    .sidebar-toggle.collapsed {
+      left: var(--sidebar-collapsed-width);
+    }
+    
+    .list-group-item-action {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      margin: 0.25rem 0.75rem;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      background-color: transparent;
+    }
+    
+    .list-group-item-action i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .list-group-item-action:hover {
+      transform: translateX(5px);
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      border-color: rgba(var(--primary-color-rgb), 0.2);
+    }
+    
+    .list-group-item-action.active {
+      background: var(--primary-gradient);
+      border-color: var(--primary-color);
+      transform: translateX(5px);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .navbar {
+      box-shadow: var(--shadow-sm);
+      background: var(--primary-gradient) !important;
+      padding: 0.5rem 1rem;
+      transition: all var(--transition-speed);
+      z-index: 1030;
+    }
+    
+    .navbar-brand {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .navbar-brand i {
+      font-size: 1.25rem;
+    }
+    
+    .navbar-text {
+      background-color: rgba(58, 35, 35, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .navbar .badge {
+      font-weight: 500;
+      padding: 0.35rem 0.65rem;
+    }
+    
+    @media (max-width: 992px) {
+      :root {
+        --sidebar-width: 100%;
+        --sidebar-collapsed-width: 0;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+        width: 280px;
+        max-width: 80vw;
+      }
+      
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      
+      .content-area {
+        margin-left: 0;
+        width: 100%;
+      }
+      
+      .content-area.expanded {
+        margin-left: 0;
+      }
+      
+      .sidebar-toggle {
+        left: 0;
+      }
+      
+      .sidebar-toggle.show {
+        left: calc(100% - 40px);
+      }
+      
+      .navbar-brand {
+        font-size: 1rem;
+      }
+      
+      .navbar-text {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+      }
+      
+      .navbar .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .container-fluid {
+        padding: 0 10px;
+      }
+
+      .content-area {
+        padding: 15px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .navbar-brand span {
+        display: none;
+      }
+      
+      .navbar-text {
+        display: none;
+      }
+      
+      .navbar .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
+    }
+    
+    /* Animations améliorées */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .fade-in {
+      animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .slide-in-left {
+      animation: slideInLeft 0.5s ease-out;
+    }
+    
+    .slide-in-right {
+      animation: slideInRight 0.5s ease-out;
+    }
+    
+    /* Pulse animation for notifications */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .spinner-grow, .spinner-border {
+      vertical-align: middle;
+    }
+    
+    /* Notifications toast améliorées */
+    .toast {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      transform-origin: bottom right;
+    }
+    
+    .toast.showing {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast-header {
+      background: transparent;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+    }
+    
+    .toast-body {
+      padding: 1rem;
+      color: var(--text-color);
+    }
+    
+    /* Modales améliorées */
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.25rem;
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+    }
+    
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1.25rem;
+    }
+    
+    .modal.fade .modal-dialog {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .modal.fade .modal-dialog.modal-dialog-centered {
+      transform: translateY(-50px);
+    }
+    
+    .modal.show .modal-dialog.modal-dialog-centered {
+      transform: translateY(0);
+    }
+    
+    /* Loading overlay amélioré */
+    #loadingOverlay {
+      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.5);
+    }
+    
+    #loadingOverlay .card {
+      background: var(--card-bg);
+      border: none;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    /* Boutons améliorés */
+    .btn {
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .btn-primary {
+      background: var(--primary-gradient);
+      border: none;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    }
+    
+    .btn-outline-light {
+      border-width: 2px;
+    }
+    
+    /* Animations de page */
+    .page-transition {
+      animation: fadeIn 0.3s ease;
+    }
+
+    #mainContent {
+      position: relative;
+    }
+
+    #mainContent.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    #mainContent.loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(var(--bg-color-rgb), 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+    }
+
+    /* Styles pour les cartes */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background-color: transparent;
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.25rem;
+    }
+
+    .card-body {
+      padding: 1.25rem;
+    }
+
+    .card-footer {
+      background-color: transparent;
+      border-top: 1px solid var(--border-color);
+      padding: 1rem 1.25rem;
+    }
+
+    /* Styles pour les tableaux */
+    .table {
+      color: var(--text-color);
+      border-color: var(--border-color);
+    }
+
+    .table th {
+      font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.05);
+    }
+
+    .table-responsive {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Animation pour les lignes de tableau */
+    .table tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    /* Styles pour les badges */
+    .badge {
+      font-weight: 500;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .badge:hover {
+      transform: scale(1.05);
+    }
+
+    /* Styles pour les formulaires */
+    .form-control, .form-select {
+      border-color: var(--border-color);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
+      border-color: rgba(var(--primary-color-rgb), 0.5);
+    }
+
+    .input-group {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .input-group-text {
+      background-color: var(--card-bg);
+      border-color: var(--border-color);
+      color: var(--text-color);
+    }
+
+    /* Animations pour les éléments des pages */
+    .dashboard-card {
+      animation: fadeInUp 0.5s ease-out;
+      animation-fill-mode: both;
+    }
+
+    .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+    .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+    .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+    .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="<?= getAppUrl() ?>?page=homes&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>">
+        <i class="bi bi-shield-check me-2"></i>
+        <strong>Yoozak Rescue CMD</strong>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center" href="<?= getAppUrl() ?>?page=homes&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>">
+              <i class="bi bi-house me-1"></i>Accueil
+            </a>
+          </li>
+          <? if (role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrateur') { ?>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center" href="<?= getAppUrl() ?>?page=cmdinits&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>">
+                <i class="bi bi-list-check me-1"></i>Gestion des Commandes
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center" href="<?= getAppUrl() ?>?page=operateurs&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>">
+                <i class="bi bi-people me-1"></i>Gestion des Opérateurs
+              </a>
+            </li>
+          <? } else { ?>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center" href="<?= getAppUrl() ?>?page=cmdoperateurs&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>">
+                <i class="bi bi-list-task me-1"></i>Mes commandes
+              </a>
+            </li>
+          <? } ?>
+        </ul>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link text-light me-3" onclick="toggleTheme()" id="themeToggle">
+            <i class="bi bi-moon-fill"></i>
+          </button>
+          <span class="navbar-text me-3 d-flex align-items-center">
+            <i class="bi bi-person-circle me-1"></i>
+            <?= user ?> <span class="badge bg-light text-primary ms-2"><?= role ?></span>
+          </span>
+          <button class="btn btn-outline-light d-flex align-items-center" onclick="handleLogout()">
+            <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Bouton de bascule du menu -->
+  <button class="sidebar-toggle" id="sidebarToggle">
+    <i class="bi bi-chevron-left" id="toggleIcon"></i>
+  </button>
+
+  <!-- Contenu principal -->
+  <div class="container-fluid" style="margin-top: var(--top-nav-height);">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-auto p-0">
+        <div class="bg-light sidebar" id="sidebar">
+          <div class="d-flex flex-column flex-shrink-0 p-3">
+            <span class="d-flex align-items-center fs-5 mb-3">
+              <i class="bi bi-grid-1x2 me-2"></i>
+              <span class="menu-text">Menu</span>
+            </span>
+            <hr>
+            <div class="list-group list-group-flush">
+              <!-- Menu commun -->
+              <a href="<?= getAppUrl() ?>?page=homes&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                 class="list-group-item list-group-item-action <?= currentPage === 'homes' ? 'active' : '' ?>"
+                 title="Accueil">
+                <i class="bi bi-house-door-fill"></i>
+                <span class="menu-text">Accueil</span>
+              </a>
+              
+              <? if (role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrateur') { ?>
+                <!-- Menu Admin -->
+                <a href="<?= getAppUrl() ?>?page=cmdinits&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                   class="list-group-item list-group-item-action <?= currentPage === 'cmdinits' ? 'active' : '' ?>"
+                   title="Gestion des Commandes">
+                  <i class="bi bi-list-check"></i>
+                  <span class="menu-text">Gestion des Commandes</span>
+                </a>
+                
+                <a href="<?= getAppUrl() ?>?page=operateurs&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                   class="list-group-item list-group-item-action <?= currentPage === 'operateurs' ? 'active' : '' ?>"
+                   title="Gestion des Opérateurs">
+                  <i class="bi bi-people"></i>
+                  <span class="menu-text">Gestion des Opérateurs</span>
+                </a>
+              <? } else { ?>
+                <!-- Menu Opérateur -->
+                <a href="<?= getAppUrl() ?>?page=cmdoperateurs&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                   class="list-group-item list-group-item-action <?= currentPage === 'cmdoperateurs' ? 'active' : '' ?>"
+                   title="Mes Commandes">
+                  <i class="bi bi-list-task"></i>
+                  <span class="menu-text">Mes Commandes</span>
+                </a>
+                
+                <a href="<?= getAppUrl() ?>?page=cmdconfirms&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                   class="list-group-item list-group-item-action <?= currentPage === 'cmdconfirms' ? 'active' : '' ?>"
+                   title="Confirmations">
+                  <i class="bi bi-check2-square"></i>
+                  <span class="menu-text">Confirmations</span>
+                </a>
+                
+                <a href="<?= getAppUrl() ?>?page=cmdoperasettings&user=<?= encodeURIComponent(user) ?>&role=<?= encodeURIComponent(role) ?>" 
+                   class="list-group-item list-group-item-action <?= currentPage === 'cmdoperasettings' ? 'active' : '' ?>"
+                   title="Paramètres">
+                  <i class="bi bi-gear"></i>
+                  <span class="menu-text">Paramètres</span>
+                </a>
+              <? } ?>
+              
+              <!-- Raccourci pour tous -->
+              <hr class="my-3">
+              <div class="text-muted small ps-2 mb-2 menu-text">Raccourcis</div>
+              <a href="#" onclick="refreshPage(); return false;" 
+                 class="list-group-item list-group-item-action"
+                 title="Actualiser la page">
+                <i class="bi bi-arrow-repeat"></i>
+                <span class="menu-text">Actualiser la page</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone de contenu -->
+      <div class="col p-0">
+        <div class="content-area" id="content">
+          <div id="mainContent" class="fade-in">
+            <?!= contentPlaceholder ?>
+          </div>
+          
+          <!-- Notifications toast -->
+          <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header">
+                <i class="bi bi-bell-fill me-2 text-primary"></i>
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <small id="toastTime">Maintenant</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body" id="toastMessage">
+                Message de notification
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let toastInstance = null;
+    
+    // Fonction pour basculer le menu latéral
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      const toggle = document.getElementById('sidebarToggle');
+      const toggleIcon = document.getElementById('toggleIcon');
+      
+      sidebar.classList.toggle('collapsed');
+      content.classList.toggle('expanded');
+      toggle.classList.toggle('collapsed');
+      
+      if (sidebar.classList.contains('collapsed')) {
+        toggleIcon.classList.remove('bi-chevron-left');
+        toggleIcon.classList.add('bi-chevron-right');
+      } else {
+        toggleIcon.classList.remove('bi-chevron-right');
+        toggleIcon.classList.add('bi-chevron-left');
+      }
+      
+      // Sauvegarder l'état dans le localStorage
+      localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+      
+      // Forcer un recalcul du layout
+      window.dispatchEvent(new Event('resize'));
+      
+      // Ajuster les éléments d'UI pour s'adapter au changement
+      adjustUIForSidebarState();
+    }
+    
+    // Fonction pour ajuster l'interface selon l'état de la barre latérale
+    function adjustUIForSidebarState() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      const isMobile = window.innerWidth < 992;
+      
+      if (isMobile) {
+        // Sur mobile, ajuster différemment
+        if (sidebar.classList.contains('show')) {
+          document.body.style.overflow = 'hidden'; // Empêcher le défilement
+          content.style.filter = 'blur(3px)';
+        } else {
+          document.body.style.overflow = '';
+          content.style.filter = '';
+        }
+      } else {
+        // Sur desktop, s'assurer que le contenu est correctement aligné
+        content.style.marginLeft = sidebar.classList.contains('collapsed') 
+          ? `${getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed-width')}` 
+          : `${getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')}`;
+      }
+      
+      // Animer les éléments du contenu pour s'adapter
+      const contentElements = document.querySelectorAll('#mainContent > .row, #mainContent > .container-fluid > .row');
+      contentElements.forEach(el => {
+        el.style.transition = 'padding var(--transition-speed) ease';
+      });
+    }
+    
+    // Restaurer l'état du menu au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      const toggle = document.getElementById('sidebarToggle');
+      const toggleIcon = document.getElementById('toggleIcon');
+      
+      // Restaurer l'état du thème
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        document.querySelector('#themeToggle i').classList.replace('bi-moon-fill', 'bi-sun-fill');
+      }
+      
+      // Restaurer l'état de la barre latérale
+      const sidebarState = localStorage.getItem('sidebarState');
+      if (sidebarState === 'collapsed') {
+        sidebar.classList.add('collapsed');
+        content.classList.add('expanded');
+        toggle.classList.add('collapsed');
+        toggleIcon.classList.replace('bi-chevron-left', 'bi-chevron-right');
+      }
+      
+      // Support du responsive sur mobile
+      if (window.innerWidth < 992) {
+        sidebar.classList.remove('collapsed');
+        content.classList.remove('expanded');
+        content.style.marginLeft = '0';
+        toggle.classList.remove('collapsed');
+      }
+      
+      // Vérifier la session périodiquement
+      setInterval(checkSession, 60000); // Vérifier toutes les minutes
+      
+      // Initialiser les toasts
+      const toastEl = document.getElementById('notificationToast');
+      toastInstance = new bootstrap.Toast(toastEl);
+      
+      // Appliquer les ajustements initiaux
+      adjustUIForSidebarState();
+      
+      // Configurer le rejet du menu mobile
+      setupMobileMenuDismiss();
+
+      // Ajouter l'écouteur d'événement au bouton de bascule
+      toggle.addEventListener('click', function() {
+        if (window.innerWidth < 992) {
+          toggleMobileMenu();
+        } else {
+          toggleSidebar();
+        }
+      });
+    });
+
+    // Fonction pour vérifier la session
+    function checkSession() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionData = {
+        user: urlParams.get('user'),
+        role: urlParams.get('role')
+      };
+      
+      if (!sessionData.user || !sessionData.role) {
+        console.warn("Données de session manquantes");
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (!result.connecte) {
+            console.warn("Session expirée:", result.message);
+            showToast("Session expirée", "Vous allez être redirigé vers la page de connexion.", "warning");
+            setTimeout(function() {
+              window.top.location.href = '<?= getAppUrl() ?>';
+            }, 3000);
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error("Erreur de vérification de session:", error);
+        })
+        .verifierConnexion(sessionData);
+    }
+
+    // Fonction pour naviguer vers une page (conservée pour la compatibilité)
+    function navigateTo(pageName, type) {
+      try {
+        // Récupérer les paramètres d'URL actuels
+        var urlParams = new URLSearchParams(window.location.search);
+        var currentUser = urlParams.get('user');
+        var currentRole = urlParams.get('role');
+        
+        if (!currentUser || !currentRole) {
+          console.error("Paramètres de session manquants");
+          window.top.location.href = '<?= getAppUrl() ?>';
+          return;
+        }
+        
+        // Créer l'URL avec la fonction getAppUrl()
+        var newUrl = '<?= getAppUrl() ?>' + 
+                    '?page=' + encodeURIComponent(pageName) + 
+                    '&user=' + encodeURIComponent(currentUser) + 
+                    '&role=' + encodeURIComponent(currentRole);
+        
+        // Ajouter le paramètre type si fourni
+        if (type) {
+          newUrl += '&type=' + encodeURIComponent(type);
+        }
+        
+        // Ajouter l'animation de transition
+        const mainContent = document.getElementById('mainContent');
+        mainContent.classList.add('loading');
+        
+        // Redirection avec animation
+        setTimeout(() => {
+          window.top.location.href = newUrl;
+        }, 300);
+        
+      } catch (error) {
+        console.error("Erreur de navigation:", error);
+        window.top.location.href = '<?= getAppUrl() ?>';
+      }
+    }
+    
+    // Afficher l'indicateur de chargement
+    function showLoadingIndicator() {
+      const mainContent = document.getElementById('mainContent');
+      
+      // Animation de transition
+      mainContent.classList.add('loading');
+      
+      // Créer l'indicateur de chargement
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'loading-indicator';
+      loadingIndicator.innerHTML = `
+        <div class="d-flex flex-column align-items-center">
+          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <div class="text-muted">Chargement en cours...</div>
+        </div>
+      `;
+      
+      // Ajouter l'indicateur au contenu principal avec une transition
+      setTimeout(() => {
+        mainContent.innerHTML = '';
+        mainContent.appendChild(loadingIndicator);
+      }, 100);
+    }
+    
+    // Gérer la déconnexion
+    function handleLogout() {
+      try {
+        // Créer la modale si elle n'existe pas déjà
+        if (!document.getElementById('logoutModal')) {
+          const modalHTML = `
+            <div class="modal fade" id="logoutModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="logoutModalLabel">
+                      <i class="bi bi-box-arrow-right me-2"></i>Confirmation
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body text-center py-4">
+                    <i class="bi bi-question-circle text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-3">Déconnexion</h5>
+                    <p class="mb-0">Êtes-vous sûr de vouloir vous déconnecter ?</p>
+                    <p class="small text-muted mt-2"><?= user ?></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-2"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="proceedWithLogout()">
+                      <i class="bi bi-box-arrow-right me-2"></i>Se déconnecter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+          
+          document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // Afficher la modale
+        const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
+        logoutModal.show();
+      } catch (error) {
+        console.error("Erreur lors de l'affichage de la modale:", error);
+        // En cas d'erreur avec la modale, procéder directement à la déconnexion
+        proceedWithLogout();
+      }
+    }
+
+    // Fonction pour procéder à la déconnexion après confirmation
+    function proceedWithLogout() {
+      try {
+        // Masquer la modale de confirmation
+        const logoutModal = bootstrap.Modal.getInstance(document.getElementById('logoutModal'));
+        if (logoutModal) {
+          logoutModal.hide();
+        }
+
+        // Utiliser la variable injectée par le serveur directement
+        const username = "<?= user ?>";
+        console.log("Déconnexion de l'utilisateur:", username);
+
+        // Créer et afficher l'overlay de chargement
+        const loadingOverlay = `
+          <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.5); z-index: 9999;">
+            <div class="card shadow border-0" style="min-width: 300px;">
+              <div class="card-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Déconnexion en cours...</span>
+                </div>
+                <h5 class="card-title">Déconnexion en cours</h5>
+                <p class="card-text text-muted mb-0">Veuillez patienter...</p>
+              </div>
+            </div>
+          </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', loadingOverlay);
+
+        // Désactiver les interactions
+        document.querySelectorAll('a, button').forEach(el => {
+          el.style.pointerEvents = 'none';
+          if (el.tagName === 'BUTTON') {
+            el.disabled = true;
+          }
+        });
+
+        // Appeler la déconnexion côté serveur
+        google.script.run
+          .withSuccessHandler(function(result) {
+            console.log("Réponse de déconnexion:", result);
+            
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            if (result && result.success) {
+              loadingOverlay.innerHTML = `
+                <div class="card shadow border-0" style="min-width: 300px;">
+                  <div class="card-body text-center p-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Déconnexion réussie</h5>
+                    <p class="card-text text-muted mb-0">Redirection en cours...</p>
+                  </div>
+                </div>`;
+              
+              setTimeout(function() {
+                window.top.location.href = result.redirectUrl || '<?= getAppUrl() ?>?page=connexions';
+              }, 1500);
+            } else {
+              loadingOverlay.innerHTML = `
+                <div class="card shadow border-0" style="min-width: 300px;">
+                  <div class="card-body text-center p-4">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Erreur de déconnexion</h5>
+                    <p class="card-text text-muted mb-0">${result.message || 'Une erreur est survenue'}</p>
+                  </div>
+                </div>`;
+              
+              setTimeout(function() {
+                window.top.location.href = '<?= getAppUrl() ?>?page=connexions';
+              }, 2000);
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error("Erreur de déconnexion:", error);
+            
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.innerHTML = `
+              <div class="card shadow border-0" style="min-width: 300px;">
+                <div class="card-body text-center p-4">
+                  <i class="bi bi-x-circle text-danger" style="font-size: 3rem;"></i>
+                  <h5 class="card-title mt-3">Erreur technique</h5>
+                  <p class="card-text text-muted mb-0">Une erreur est survenue lors de la déconnexion</p>
+                </div>
+              </div>`;
+            
+            setTimeout(function() {
+              window.top.location.href = '<?= getAppUrl() ?>?page=connexions';
+            }, 2000);
+          })
+          .logoutUser(username);
+      } catch (error) {
+        console.error("Erreur dans proceedWithLogout:", error);
+        window.top.location.href = '<?= getAppUrl() ?>?page=connexions';
+      }
+    }
+
+    // Fonction pour basculer le thème
+    function toggleTheme() {
+      const body = document.body;
+      const themeIcon = document.querySelector('#themeToggle i');
+      const currentTheme = body.getAttribute('data-theme');
+      
+      if (currentTheme === 'dark') {
+        body.removeAttribute('data-theme');
+        themeIcon.classList.remove('bi-sun-fill');
+        themeIcon.classList.add('bi-moon-fill');
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        themeIcon.classList.remove('bi-moon-fill');
+        themeIcon.classList.add('bi-sun-fill');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Ajout de la gestion responsive
+    window.addEventListener('resize', function() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      const toggle = document.getElementById('sidebarToggle');
+      
+      if (window.innerWidth < 992) {
+        // Sur mobile
+        sidebar.classList.remove('collapsed');
+        content.classList.remove('expanded');
+        toggle.classList.remove('collapsed');
+        
+        // Réinitialiser le style marginLeft
+        content.style.marginLeft = '0';
+        
+        // Si la barre latérale est visible, ajouter un effet de flou au contenu
+        if (sidebar.classList.contains('show')) {
+          content.style.filter = 'blur(3px)';
+        } else {
+          content.style.filter = '';
+        }
+      } else {
+        // Sur desktop
+        const sidebarState = localStorage.getItem('sidebarState');
+        
+        // Réinitialiser les styles
+        content.style.filter = '';
+        document.body.style.overflow = '';
+        
+        if (sidebarState === 'collapsed') {
+          sidebar.classList.add('collapsed');
+          content.classList.add('expanded');
+          toggle.classList.add('collapsed');
+          
+          // Définir correctement la marge
+          content.style.marginLeft = `${getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed-width')}`;
+        } else {
+          // Assurer que les classes sont correctes
+          sidebar.classList.remove('collapsed');
+          content.classList.remove('expanded');
+          toggle.classList.remove('collapsed');
+          
+          // Réinitialiser la marge
+          content.style.marginLeft = '';
+        }
+      }
+    });
+
+    // Fonction pour actualiser la page
+    function refreshPage() {
+      showLoadingIndicator();
+      location.reload();
+    }
+
+    // Afficher une notification toast
+    function showToast(title, message, type = 'info') {
+      const toast = document.getElementById('notificationToast');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastTime = document.getElementById('toastTime');
+      
+      // Définir le contenu
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+      toastTime.textContent = new Date().toLocaleTimeString();
+      
+      // Définir le style selon le type
+      toast.className = 'toast';
+      if (type === 'success') {
+        toast.classList.add('text-bg-success');
+      } else if (type === 'error') {
+        toast.classList.add('text-bg-danger');
+      } else if (type === 'warning') {
+        toast.classList.add('text-bg-warning');
+      } else {
+        toast.classList.add('text-bg-info');
+      }
+      
+      // Afficher le toast
+      if (!toastInstance) {
+        toastInstance = new bootstrap.Toast(toast);
+      }
+      toastInstance.show();
+    }
+
+    // Fonction pour afficher le menu sur mobile
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      
+      if (window.innerWidth < 992) {
+        sidebar.classList.toggle('show');
+        
+        // Appliquer l'effet de flou au contenu quand le menu est ouvert
+        if (sidebar.classList.contains('show')) {
+          content.style.filter = 'blur(3px)';
+          document.body.style.overflow = 'hidden'; // Empêcher le défilement
+        } else {
+          content.style.filter = '';
+          document.body.style.overflow = '';
+        }
+      }
+    }
+
+    // Fonction pour fermer le menu mobile quand on clique à l'extérieur
+    function setupMobileMenuDismiss() {
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('content');
+      
+      content.addEventListener('click', function(e) {
+        if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
+          sidebar.classList.remove('show');
+          content.style.filter = '';
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
